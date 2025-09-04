@@ -65,21 +65,35 @@ function renderSidebar() {
     div.classList.add("menu-item");
     div.dataset.menu = item.id;
 
-    // Highlight active main widget dynamically
-    if (["calendar", "map", "camera"].includes(item.id) && item.id === currentMain) {
+    // Highlight active main widget
+    if (["calendar","map","camera"].includes(item.id) && item.id === currentMain) {
       div.classList.add("active");
     }
 
-    // icon
+    // Icon
     const img = document.createElement("img");
     img.src = item.iconSrc;
     img.classList.add("menu-icon");
+    img.width = 24;
+    img.height = 24;
+    img.style.objectFit = "contain";
+    img.style.filter = "invert(100%)"; // force white
     div.appendChild(img);
 
-    // mouse/touch support
+    // Label text (hidden by default)
+    const label = document.createElement("span");
+    label.classList.add("menu-label");
+    label.textContent = item.label || "";
+    div.appendChild(label);
+
+    // Mouse / touch
     div.addEventListener("mouseover", () => {
       focus = { type: "menu", index };
+      sidebarEl.classList.add("expanded");
       updateFocus();
+    });
+    div.addEventListener("mouseout", () => {
+      if (focus.type !== "menu") sidebarEl.classList.remove("expanded");
     });
     div.addEventListener("click", () => {
       focus = { type: "menu", index };
@@ -87,13 +101,6 @@ function renderSidebar() {
     });
 
     sidebarEl.appendChild(div);
-
-    // optional separator
-    if (item.separator) {
-      const sep = document.createElement("div");
-      sep.classList.add("menu-separator");
-      sidebarEl.appendChild(sep);
-    }
   });
 }
 
