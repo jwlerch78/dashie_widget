@@ -208,6 +208,7 @@ function handleEnter() {
     } else if (menuKey) {
       currentMain = menuKey;
       renderGrid();
+      renderSidebar();
     }
   }
   updateFocus();
