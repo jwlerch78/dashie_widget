@@ -118,11 +118,16 @@ function updateFocus() {
     if (cell) cell.classList.add("selected");
   }
 
-  // sidebar focus
-  if (focus.type === "menu") {
-    const items = sidebarEl.querySelectorAll(".menu-item");
-    if (items[focus.index]) items[focus.index].classList.add("selected");
-  }
+// sidebar focus
+if (focus.type === "menu") {
+  const items = sidebarEl.querySelectorAll(".menu-item");
+  if (items[focus.index]) items[focus.index].classList.add("selected");
+  
+  // expand sidebar when menu is focused
+  sidebarEl.classList.add("expanded");
+} else {
+  sidebarEl.classList.remove("expanded");
+}
 
   // focused widget
   if (selectedCell) {
