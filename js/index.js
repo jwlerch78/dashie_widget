@@ -288,6 +288,19 @@ document.addEventListener("keydown", e => {
     case "Enter": handleEnter(); break;
     case "Escape": handleBack(); break;
     case "Backspace": handleBack(); break;
+    case "m":
+    case "M": openMenuWithCurrentSelection(); break;
+  }
+});
+
+// Click outside menu to close it
+document.addEventListener("click", e => {
+  if (!sidebarEl.contains(e.target) && sidebarEl.classList.contains("expanded")) {
+    sidebarEl.classList.remove("expanded");
+    if (focus.type === "menu") {
+      focus = { type: "grid", row: 1, col: 1 };
+      updateFocus();
+    }
   }
 });
 
