@@ -45,7 +45,7 @@ html, body {
 
 /* Dashie logo at top - always takes up space */
 .dashie-logo {
-  width: 160px;
+  width: 100px;
   height: auto;
   margin: 8px auto 20px auto;
   opacity: 0;
