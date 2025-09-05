@@ -60,50 +60,85 @@ function renderGrid() {
 function renderSidebar() {
   sidebarEl.innerHTML = ""; // clear previous
 
-  sidebarOptions.forEach((item, index) => {
-    const div = document.createElement("div");
-    div.classList.add("menu-item");
-    div.dataset.menu = item.id;
+  // Separate main and system items
+  const mainItems = sidebarOptions.filter(item => item.type === "main");
+  const systemItems = sidebarOptions.filter(item => item.type === "system");
 
-    // Highlight active main widget
-    if (["calendar","map","camera"].includes(item.id) && item.id === currentMain) {
-      div.classList.add("active");
-    }
-
-    // Icon
-    const img = document.createElement("img");
-    img.src = item.iconSrc;
-    img.classList.add("menu-icon");
-    img.width = 24;
-    img.height = 24;
-    img.style.objectFit = "contain";
-    img.style.filter = "invert(100%)"; // force white
-    div.appendChild(img);
-
-    // Label text (hidden by default)
-    const label = document.createElement("span");
-    label.classList.add("menu-label");
-    label.textContent = item.label || "";
-    div.appendChild(label);
-
-    // Mouse / touch
-    div.addEventListener("mouseover", () => {
-      focus = { type: "menu", index };
-      sidebarEl.classList.add("expanded");
-      updateFocus();
-    });
-    div.addEventListener("mouseout", () => {
-      if (focus.type !== "menu") sidebarEl.classList.remove("expanded");
-    });
-    div.addEventListener("click", () => {
-      focus = { type: "menu", index };
-      handleEnter();
-    });
-
+  // Create main items (content selection)
+  mainItems.forEach((item, index) => {
+    const div = createMenuItem(item, "main", index);
     sidebarEl.appendChild(div);
   });
+
+  // Add separator
+  const separator = document.createElement("div");
+  separator.classList.add("menu-separator");
+  sidebarEl.appendChild(separator);
+
+  // Create system functions container (2x2 grid)
+  const systemContainer = document.createElement("div");
+  systemContainer.classList.add("system-functions");
+
+  systemItems.forEach((item, index) => {
+    const div = createMenuItem(item, "system", index + mainItems.length);
+    systemContainer.appendChild(div);
+  });
+
+  sidebarEl.appendChild(systemContainer);
 }
 
+function createMenuItem(item, type, globalIndex) {
+  const div = document.createElement("div");
+  div.classList.add("menu-item", type);
+  div.dataset.menu = item.id;
+  div.dataset.globalIndex = globalIndex; // for focus navigation
+
+  // Highlight active main widget
+  if (["calendar","map","camera"].includes(item.id) && item.id === currentMain) {
+    div.classList.add("active");
+  }
+
+  // Icon
+  const img = document.createElement("img");
+  img.src = item.iconSrc;
+  img.classList.add("menu-icon");
+  img.style.objectFit = "contain";
+  img.style.filter = "invert(100%)"; // force white
+  div.appendChild(img);
+
+  // Label text (hidden by default, shown when expanded)
+  const label = document.createElement("span");
+  label.classList.add("menu-label");
+  label.textContent = item.label || "";
+  div.appendChild(label);
+
+  // Mouse / touch events
+  div.addEventListener("mouseover", () => {
+    focus = { type: "menu", index: globalIndex };
+    sidebarEl.classList.add("expanded");
+    updateFocus();
+  });
+
+  div.addEventListener("mouseout", () => {
+    if (focus.type !== "menu") sidebarEl.classList.remove("expanded");
+  });
+
+  div.addEventListener("click", () => {
+    focus = { type: "menu", index: globalIndex };
+    
+    // For system items, expand the menu first
+    if (type === "system") {
+      sidebarEl.classList.add("expanded");
+      updateFocus();
+      // Small delay to show expansion, then execute
+      setTimeout(() => handleEnter(), 150);
+    } else {
+      handleEnter();
+    }
+  });
+
+  return div;
+}
 
 function updateFocus() {
   // clear all highlights
@@ -118,16 +153,16 @@ function updateFocus() {
     if (cell) cell.classList.add("selected");
   }
 
-// sidebar focus
-if (focus.type === "menu") {
-  const items = sidebarEl.querySelectorAll(".menu-item");
-  if (items[focus.index]) items[focus.index].classList.add("selected");
-  
-  // expand sidebar when menu is focused
-  sidebarEl.classList.add("expanded");
-} else {
-  sidebarEl.classList.remove("expanded");
-}
+  // sidebar focus
+  if (focus.type === "menu") {
+    const items = sidebarEl.querySelectorAll(".menu-item");
+    if (items[focus.index]) items[focus.index].classList.add("selected");
+    
+    // expand sidebar when menu is focused
+    sidebarEl.classList.add("expanded");
+  } else {
+    sidebarEl.classList.remove("expanded");
+  }
 
   // focused widget
   if (selectedCell) {
@@ -165,7 +200,7 @@ function moveFocus(dir) {
     if (dir === "left") col--;
     if (dir === "right") {
       if (col === 2) {
-        // Move to sidebar
+        // Move to sidebar (start with first main item)
         focus = { type: "menu", index: 0 };
         updateFocus();
         return;
@@ -179,9 +214,10 @@ function moveFocus(dir) {
       focus = { type: "grid", row, col };
     }
   } else if (focus.type === "menu") {
+    const totalItems = sidebarOptions.length;
+    
     if (dir === "up" && focus.index > 0) focus.index--;
-    if (dir === "down" && focus.index < sidebarEl.children.length - 1)
-      focus.index++;
+    if (dir === "down" && focus.index < totalItems - 1) focus.index++;
     if (dir === "left") {
       focus = { type: "grid", row: 1, col: 2 };
     }
@@ -205,10 +241,10 @@ function handleEnter() {
       selectedCell = el;
     }
   } else if (focus.type === "menu") {
-    const menuItem = sidebarEl.children[focus.index];
+    const menuItems = sidebarEl.querySelectorAll(".menu-item");
+    const menuItem = menuItems[focus.index];
     const menuKey = menuItem?.dataset?.menu;
 
-    
     if (menuKey === "sleep") {
       alert("Sleep function (placeholder)");  // TODO: hook into real sleep
     } else if (menuKey === "settings") {
@@ -218,6 +254,7 @@ function handleEnter() {
     } else if (menuKey === "exit") {
       alert("Exit Dashie (placeholder)"); // TODO: hook into real exit
     } else if (menuKey) {
+      // Main content items
       currentMain = menuKey;
       renderGrid();
       renderSidebar();
