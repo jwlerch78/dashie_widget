@@ -68,7 +68,7 @@ html, body {
   cursor: pointer;
   width: 32px;
   height: 32px;
-  margin-top: 30px; /* shift down to make room for logo */
+  margin-top: 50px;
   transition: background 0.2s, transform 0.2s, justify-content 0.3s;
 }
 
@@ -111,7 +111,7 @@ html, body {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 2px;
-  margin-top: auto; /* push to bottom */
+  margin-top: auto;
   margin-bottom: 10px;
   width: 44px;
   height: 44px;
@@ -130,7 +130,7 @@ html, body {
 
 /* Reset main item margins when expanded */
 #sidebar.expanded .menu-item.main {
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 /* Main icons keep same size when expanded */
@@ -150,18 +150,19 @@ html, body {
   flex-direction: column;
   width: 100%;
   height: auto;
-  gap: 0; /* no gap between system items */
+  gap: 0;
   margin: 0;
-  margin-top: auto; /* keep at bottom */
+  margin-top: auto;
   padding-bottom: 10px;
 }
 
 /* Make system items smaller and more compact in expanded mode */
 #sidebar.expanded .menu-item.system {
   width: 100%;
-  height: 32px;
-  margin: 1px 0;
+  height: 28px;
+  margin: 0;
   padding: 4px 8px;
+  line-height: 1.2;
 }
 
 /* Label that appears only in expanded mode */
