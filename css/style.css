@@ -43,17 +43,18 @@ html, body {
   padding-left: 12px;
 }
 
-/* Dashie logo at top when expanded */
+/* Dashie logo at top - always takes up space */
 .dashie-logo {
   width: 160px;
   height: auto;
   margin: 8px auto 20px auto;
-  display: none;
+  opacity: 0;
   object-fit: contain;
+  transition: opacity 0.3s ease;
 }
 
 #sidebar.expanded .dashie-logo {
-  display: block;
+  opacity: 1;
 }
 
 /* Main content selection items */
@@ -68,7 +69,6 @@ html, body {
   cursor: pointer;
   width: 32px;
   height: 32px;
-  margin-top: 50px;
   transition: background 0.2s, transform 0.2s, justify-content 0.3s;
 }
 
@@ -128,9 +128,9 @@ html, body {
   border-radius: 12px;
 }
 
-/* Reset main item margins when expanded */
+/* Main items keep same margins when expanded */
 #sidebar.expanded .menu-item.main {
-  margin: 8px 0; /* same as collapsed */
+  margin: 8px 0;
 }
 
 /* Main icons keep same size when expanded */
@@ -156,7 +156,7 @@ html, body {
   padding-bottom: 10px;
 }
 
-/* Make system items smaller and more compact in expanded mode */
+/* Make system items compact in expanded mode */
 #sidebar.expanded .menu-item.system {
   width: 100%;
   height: 28px;
