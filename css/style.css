@@ -19,7 +19,7 @@ html, body {
   position: absolute;        /* always absolute */
   top: 0;
   bottom: 0;
-  right: 0;
+  left: 0;
   width: 60px;               /* collapsed width */
   background: #222;
   display: flex;
