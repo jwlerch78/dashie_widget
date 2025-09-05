@@ -206,9 +206,16 @@ function moveFocus(dir) {
 
     if (dir === "left") col--;
     if (dir === "right") {
+      if (col === 1 && row === 3) {
+        // Special case: bottom left widget to main widget
+        focus = { type: "grid", row: 2, col: 2 };
+        updateFocus();
+        return;
+      }
       if (col === 2) {
-        // Move to sidebar (start with first main item)
-        focus = { type: "menu", index: 0 };
+        // Move to sidebar (start with currently active main widget)
+        const currentMainIndex = sidebarOptions.findIndex(item => item.id === currentMain);
+        focus = { type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 };
         updateFocus();
         return;
       }
@@ -217,7 +224,11 @@ function moveFocus(dir) {
     if (dir === "up") row--;
     if (dir === "down") row++;
 
-    if (findWidget(row, col)) {
+    // Handle moving to main widget from other widgets
+    if (col === 2 && (row === 2 || row === 3)) {
+      // Any movement to column 2, rows 2-3 goes to main widget
+      focus = { type: "grid", row: 2, col: 2 };
+    } else if (findWidget(row, col)) {
       focus = { type: "grid", row, col };
     }
   } else if (focus.type === "menu") {
@@ -227,6 +238,7 @@ function moveFocus(dir) {
     if (dir === "down" && focus.index < totalItems - 1) focus.index++;
     if (dir === "left") {
       focus = { type: "grid", row: 1, col: 2 };
+      sidebarEl.classList.remove("expanded");
     }
   }
 
@@ -271,7 +283,22 @@ function handleEnter() {
 }
 
 function handleBack() {
-  selectedCell = null;
+  if (focus.type === "menu") {
+    // If in menu, collapse it and return to grid
+    sidebarEl.classList.remove("expanded");
+    focus = { type: "grid", row: 1, col: 1 };
+  } else {
+    // If widget is focused, unfocus it
+    selectedCell = null;
+  }
+  updateFocus();
+}
+
+function openMenuWithCurrentSelection() {
+  // Find the index of the currently active main widget
+  const currentMainIndex = sidebarOptions.findIndex(item => item.id === currentMain);
+  focus = { type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 };
+  sidebarEl.classList.add("expanded");
   updateFocus();
 }
 
