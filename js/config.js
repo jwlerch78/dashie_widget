@@ -11,11 +11,14 @@ const theme = {
 };
 
 const sidebarOptions = [
-  { id: "reload", iconSrc: "icons/icon-reload.svg", label: "Reload" },
-  { id: "sleep", iconSrc: "icons/icon-sleep.svg", label: "Sleep" },
-  { id: "settings", iconSrc: "icons/icon-settings.svg", label: "Settings"  },
-  { id: "exit", iconSrc: "icons/icon-exit.svg", label: "Exit"  },
-  { id: "calendar", iconSrc: "icons/icon-calendar.svg", label: "Calendar"  },
-  { id: "map", iconSrc: "icons/icon-map.svg", label: "Location Map"  },
-  { id: "camera", iconSrc: "icons/icon-video-camera.svg", label: "Camera Feed"  }
+  // Main content selection items (larger, always visible)
+  { id: "calendar", type: "main", iconSrc: "icons/icon-calendar.svg", label: "Calendar" },
+  { id: "map", type: "main", iconSrc: "icons/icon-map.svg", label: "Location Map" },
+  { id: "camera", type: "main", iconSrc: "icons/icon-video-camera.svg", label: "Camera Feed" },
+  
+  // System function items (smaller, in mini-grid)
+  { id: "reload", type: "system", iconSrc: "icons/icon-reload.svg", label: "Reload" },
+  { id: "sleep", type: "system", iconSrc: "icons/icon-sleep.svg", label: "Sleep" },
+  { id: "settings", type: "system", iconSrc: "icons/icon-settings.svg", label: "Settings" },
+  { id: "exit", type: "system", iconSrc: "icons/icon-exit.svg", label: "Exit" }
 ];
