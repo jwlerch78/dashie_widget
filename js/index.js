@@ -60,6 +60,13 @@ function renderGrid() {
 function renderSidebar() {
   sidebarEl.innerHTML = ""; // clear previous
 
+  // Add Dashie logo (only visible when expanded)
+  const logo = document.createElement("img");
+  logo.src = "icons/Dashie_Full_Logo_White_Transparent.png";
+  logo.classList.add("dashie-logo");
+  logo.alt = "Dashie";
+  sidebarEl.appendChild(logo);
+
   // Separate main and system items
   const mainItems = sidebarOptions.filter(item => item.type === "main");
   const systemItems = sidebarOptions.filter(item => item.type === "system");
