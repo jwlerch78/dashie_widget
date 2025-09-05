@@ -8,11 +8,11 @@
 
 // Explicit widget layout
 let widgets = [
-  { id: "clock", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "⏰ Clock" },
-  { id: "agenda", row: 2, col: 1, rowSpan: 1, colSpan: 1, label: "📝 Agenda" },
-  { id: "photos", row: 3, col: 1, rowSpan: 1, colSpan: 1, label: "🖼️ Photos" },
-  { id: "map", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "🗺️ Map" },
-  { id: "main", row: 2, col: 2, rowSpan: 2, colSpan: 1, label: "🌟 Main Widget" }
+  { id: "map", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations" },
+  { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "⏰ Clock" },
+  { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, label: "📅 Calendar" }, 
+  { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, label: "📝 Agenda" },
+  { id: "photos", row: 3, col: 2, rowSpan: 1, colSpan: 1, label: "🖼️ Photos" }
 ];
 
 // Map sidebar key to main widget content
