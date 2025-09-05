@@ -135,8 +135,14 @@ html, body {
 
 #sidebar.expanded .menu-item.main img.menu-icon,
 #sidebar.expanded .menu-item.system img.menu-icon {
-  width: 20px; /* consistent size in expanded mode */
-  height: 20px;
+  width: 24px; /* main icons keep same size, system icons stay 14px but this overrides to 24px */
+  height: 24px;
+}
+
+/* Keep system icons at their original size in expanded mode */
+#sidebar.expanded .menu-item.system img.menu-icon {
+  width: 14px; /* override back to original size */
+  height: 14px;
 }
 
 #sidebar.expanded .system-functions {
