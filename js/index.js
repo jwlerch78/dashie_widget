@@ -286,7 +286,7 @@ function handleEnter() {
 
 function handleBack() {
   if (focus.type === "menu") {
-    // If in menu, collapse it and return to grid
+    // If in menu, collapse it and return to grid (map in top-left)
     sidebarEl.classList.remove("expanded");
     focus = { type: "grid", row: 1, col: 1 };
   } else {
