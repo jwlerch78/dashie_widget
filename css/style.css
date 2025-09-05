@@ -130,7 +130,7 @@ html, body {
 
 /* Reset main item margins when expanded */
 #sidebar.expanded .menu-item.main {
-  margin-top: 5px;
+  margin: 8px 0; /* same as collapsed */
 }
 
 /* Main icons keep same size when expanded */
