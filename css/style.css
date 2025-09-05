@@ -25,7 +25,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;       /* icons horizontally centered */
-  justify-content: center;   /* icons vertically centered */
+  justify-content: flex-start; /* align to top instead of center */
   padding: 10px 0;
   transition: width 0.3s ease, background 0.3s ease;
   z-index: 10;
@@ -43,59 +43,117 @@ html, body {
   padding-left: 12px;
 }
 
-/* Menu items */
-.menu-item {
+/* Main content selection items (larger) */
+.menu-item.main {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;             /* center icons in collapsed state */
-  margin: 8px 0;
-  padding: 5px;
+  justify-content: center;
+  margin: 12px 0;
+  padding: 8px;
   border-radius: 12px;
   cursor: pointer;
-  width: 100%;                         /* full width for expanded highlight */
+  width: 40px;
+  height: 40px;
   transition: background 0.2s, transform 0.2s, justify-content 0.3s;
 }
 
-/* Icon */
-.menu-item img.menu-icon {
-  width: 24px;
-  height: 24px;
+.menu-item.main img.menu-icon {
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   filter: invert(100%);
   flex-shrink: 0;
   transition: transform 0.2s;
 }
 
+/* System function items (smaller, in mini-grid) */
+.menu-item.system {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  transition: background 0.2s, transform 0.2s, justify-content 0.3s;
+}
+
+.menu-item.system img.menu-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: invert(100%);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+/* Container for system functions mini-grid */
+.system-functions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  margin-top: auto; /* push to bottom */
+  margin-bottom: 10px;
+  width: 48px;
+  height: 48px;
+}
+
+/* Expanded state - all items become full width with labels */
+#sidebar.expanded .menu-item {
+  width: 100%;
+  height: auto;
+  justify-content: flex-start;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+#sidebar.expanded .menu-item.main img.menu-icon,
+#sidebar.expanded .menu-item.system img.menu-icon {
+  width: 24px;
+  height: 24px;
+}
+
+#sidebar.expanded .system-functions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  gap: 0;
+  margin: 0;
+}
+
 /* Label that appears only in expanded mode */
 .menu-item span.menu-label {
   position: absolute;
-  left: 70px;               /* position to the right of collapsed sidebar */
+  left: 40px;
   top: 50%;
   transform: translateY(-50%);
   color: white;
   font-size: 14px;
   white-space: nowrap;
-  opacity: 0;               /* hidden by default */
+  opacity: 0;
   transition: opacity 0.2s;
-  pointer-events: none;     /* label doesn’t block mouse */
+  pointer-events: none;
 }
 
 /* Show label when sidebar is expanded */
-#sidebar.expanded .menu-item {
-  justify-content: flex-start; /* left-align icon + label */
-}
-
 #sidebar.expanded .menu-item span.menu-label {
   opacity: 1;
+  position: static;
+  transform: none;
+  margin-left: 10px;
+  pointer-events: auto;
 }
 
-/* Highlighted / active menu item (full width) */
+/* Highlighted / active menu item */
 .menu-item.active {
-  background-color: rgba(255, 255, 255, 0.2); /* lighter gray */
-  border-radius: 0;                           /* full-width block */
-  justify-content: center;                     /* icon centered by default */
-  transition: background 0.2s;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Selected / focused state outlines */
@@ -107,15 +165,14 @@ html, body {
   outline: 3px solid cyan;
 }
 
-/* Separators */
+/* Separator line between main and system functions */
 .menu-separator {
   width: 30px;
   height: 1px;
   background: #555;
-  margin: 10px 0;
+  margin: 15px 0;
+  flex-shrink: 0;
 }
-
-
 
 /* Main grid */
 #grid {
@@ -123,9 +180,9 @@ html, body {
   display: grid;
   grid-template-rows: 10% 50% 40%;
   grid-template-columns: 30% 70%;
-  gap: 4px; /* smaller gap */
+  gap: 4px;
   padding: 4px;
-  box-sizing: border-box; /* include padding in width/height */
+  box-sizing: border-box;
 }
 
 .widget {
