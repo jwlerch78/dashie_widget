@@ -37,9 +37,14 @@ html, body {
 }
 
 #sidebar.expanded {
-  width: 200px;                        /* expanded width */
-  background: rgba(34, 34, 34, 0.9);   /* semi-transparent overlay */
-  align-items: flex-start;             /* left-align icons and labels */
+  width: 160px;
+  /* Gradient: left = semi-transparent dark, right = almost opaque */
+  background: linear-gradient(
+    to right,
+    rgba(34, 34, 34, 0.9) 0%,
+    rgba(34, 34, 34, 0.95) 100%
+  );
+  align-items: flex-start;
   padding-left: 12px;
 }
 
@@ -115,8 +120,8 @@ html, body {
   gap: 2px;
   margin-top: auto;
   margin-bottom: 10px;
-  width: 44px;
-  height: 44px;
+  width: 30px;
+  height: 30px;
   justify-content: center;
 }
 
