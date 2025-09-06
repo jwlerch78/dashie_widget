@@ -15,8 +15,18 @@ function createWidgetIframe(widget) {
     border: none;
     border-radius: 8px;
     background: #333;
+    pointer-events: auto;
   `;
   iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+  
+  // Prevent iframe from stealing focus when sidebar is expanded
+  iframe.addEventListener("focus", (e) => {
+    if (elements.sidebar.classList.contains("expanded")) {
+      console.log("⚠️ Iframe tried to steal focus while sidebar expanded, preventing");
+      e.preventDefault();
+      iframe.blur();
+    }
+  });
   
   // Add load event listener
   iframe.addEventListener("load", () => {
@@ -86,13 +96,14 @@ export function renderGrid() {
       background: transparent;
     `;
 
-    // Function to enable/disable click overlay
+    // Function to enable/disable click overlay based on sidebar state
     const updateOverlay = () => {
       const sidebarExpanded = elements.sidebar.classList.contains("expanded");
       clickOverlay.style.pointerEvents = sidebarExpanded ? "auto" : "none";
+      console.log(`Overlay for ${w.id}: ${sidebarExpanded ? "enabled" : "disabled"}`);
     };
 
-    // Click handler on overlay (not iframe)
+    // Click handler on overlay (intercepts clicks when sidebar is expanded)
     clickOverlay.addEventListener("click", (e) => {
       console.log("🖱️ Widget overlay clicked:", w.id);
       e.preventDefault();
@@ -116,7 +127,7 @@ export function renderGrid() {
       setTimeout(updateOverlay, 10);
     });
 
-    // Monitor sidebar state changes
+    // Monitor sidebar state changes with MutationObserver
     const observer = new MutationObserver(() => updateOverlay());
     observer.observe(elements.sidebar, { attributes: true, attributeFilter: ['class'] });
 
@@ -129,10 +140,10 @@ export function renderGrid() {
       div.appendChild(fallback);
     }
 
-    // Add overlay on top
+    // Add overlay on top of content
     div.appendChild(clickOverlay);
     
-    // Initial overlay state
+    // Set initial overlay state
     updateOverlay();
 
     elements.grid.appendChild(div);
