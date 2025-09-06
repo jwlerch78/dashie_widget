@@ -1,0 +1,11 @@
+/* css/components/widgets.css - Widget Container Styles */
+
+.widget {
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-large);
+  color: var(--text-primary);
+}
