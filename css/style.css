@@ -228,30 +228,31 @@ html, body {
   flex: 1;
   display: grid;
   grid-template-rows: 10% 50% 40%;
-  grid-template-columns: 70% 30%; /* swapped */
-  gap: 4px;
-  padding: 4px;
+  grid-template-columns: 70% 30%;
+  gap: var(--grid-gap);
+  padding: var(--grid-gap);
   box-sizing: border-box;
 }
+
 .widget {
-  background: #333;
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  font-size: 18px;
-  color: white;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-large);
+  color: var(--text-primary);
 }
 
 /* Much more visible widget highlighting */
 .widget.selected {
-  outline: 4px solid #ffaa00;  /* Thick orange outline */
-  outline-offset: 3px;         /* Space between widget and outline */
-  box-shadow: 0 0 15px rgba(255, 170, 0, 0.5); /* Orange glow effect */
+  outline: var(--outline-width-selected) solid var(--outline-selected);
+  outline-offset: var(--outline-offset-widget);
+  box-shadow: var(--glow-selected);
 }
 
 .widget.focused {
-  outline: 5px solid #00aaff;  /* Thick blue outline */
-  outline-offset: 3px;
-  box-shadow: 0 0 20px rgba(0, 170, 255, 0.6); /* Blue glow effect */
+  outline: 5px solid var(--outline-focused);
+  outline-offset: var(--outline-offset-widget);
+  box-shadow: var(--glow-focused);
 }
