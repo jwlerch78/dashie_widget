@@ -119,6 +119,8 @@ html, body {
   gap: 1px;
   margin-top: auto;
   margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
   width: 33px;
   height: 44px;
   justify-content: center;
