@@ -37,12 +37,12 @@ html, body {
 }
 
 #sidebar.expanded {
-  width: 160px;
-  /* Gradient: left = semi-transparent dark, right = almost opaque */
+  width: 200px;
   background: linear-gradient(
     to right,
-    rgba(34, 34, 34, 0.9) 100%,
-    rgba(34, 34, 34, 0.95) 0%
+    rgba(34, 34, 34, 0.95) 0%,
+    rgba(34, 34, 34, 0.85) 50%,
+    rgba(34, 34, 34, 0.0) 100%
   );
   align-items: flex-start;
   padding-left: 12px;
@@ -114,16 +114,17 @@ html, body {
 
 /* Container for system functions mini-grid */
 .system-functions {
-  display: grid;
-  grid-template-columns: repeat(2, 18px);  /* fixed cell width */
-  grid-template-rows: repeat(2, 18px);     /* fixed cell height */
-  gap: 4px;                                /* tighter spacing */
+    display: grid;
+  grid-template-columns: repeat(2, 18px);
+  grid-template-rows: repeat(2, 18px);
+  gap: 4px;
   margin-top: auto;
-  margin-bottom: 16px;                     /* lifts grid up slightly */
-  justify-content: center;
-  align-content: center;
-  width: auto;                             /* shrink to fit */
-  height: auto;
+  margin-bottom: 16px;
+
+  justify-content: center;   /* center horizontally */
+  align-content: center;     /* center vertically in its box */
+  justify-self: center;      /* center the grid inside sidebar */
+  width: 100%;               /* take sidebar width */
 }
 
 /* Expanded state - all items become full width with labels */
