@@ -1,8 +1,6 @@
 // js/core/navigation.js - Navigation Logic & Focus Management
 
-import { state, elements, findWidget, setFocus, setSelectedCell } from './state.js';
-import { enterSleepMode, wakeUp, handleExitChoice, moveExitFocus } from '../ui/modals.js';
-import { renderGrid, renderSidebar } from '../ui/grid.js';
+import { state, elements, findWidget, setFocus, setSelectedCell, setCurrentMain } from './state.js';
 
 // ---------------------
 // FOCUS MANAGEMENT
@@ -118,12 +116,16 @@ export function moveFocus(dir) {
 
 export function handleEnter() {
   if (state.isAsleep) {
-    wakeUp();
+    // Import and call wakeUp
+    import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
     return;
   }
   
   if (state.confirmDialog) {
-    handleExitChoice(state.confirmDialog.selectedButton);
+    // Import and call handleExitChoice
+    import('../ui/modals.js').then(({ handleExitChoice }) => {
+      handleExitChoice(state.confirmDialog.selectedButton);
+    });
     return;
   }
   
@@ -142,20 +144,20 @@ export function handleEnter() {
     const menuKey = menuItem?.dataset?.menu;
 
     if (menuKey === "sleep") {
-      enterSleepMode();
+      import('../ui/modals.js').then(({ enterSleepMode }) => enterSleepMode());
     } else if (menuKey === "settings") {
       alert("Settings menu (placeholder)");  // TODO: hook into real settings
     } else if (menuKey === "reload") {
       location.reload();
     } else if (menuKey === "exit") {
-      // Import from modals.js
-      const { showExitConfirmation } = await import('../ui/modals.js');
-      showExitConfirmation();
+      import('../ui/modals.js').then(({ showExitConfirmation }) => showExitConfirmation());
     } else if (menuKey) {
-      // Main content items
-      state.currentMain = menuKey;
-      renderGrid();
-      renderSidebar();
+      // Main content items - import grid functions
+      setCurrentMain(menuKey);
+      import('../ui/grid.js').then(({ renderGrid, renderSidebar }) => {
+        renderGrid();
+        renderSidebar();
+      });
     }
   }
   updateFocus();
@@ -163,12 +165,14 @@ export function handleEnter() {
 
 export function handleBack() {
   if (state.isAsleep) {
-    wakeUp();
+    import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
     return;
   }
   
   if (state.confirmDialog) {
-    handleExitChoice("no"); // Default to "no" when pressing back
+    import('../ui/modals.js').then(({ handleExitChoice }) => {
+      handleExitChoice("no"); // Default to "no" when pressing back
+    });
     return;
   }
   
