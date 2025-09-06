@@ -210,7 +210,7 @@ export function handleBack() {
 }
 
 export function openMenuWithCurrentSelection() {
-  if (state.isAsleep || state.confirmDialog) return;
+  if (state.isAsleep || state.confirmDialog || state.selectedCell) return; // Don't open menu if widget is focused
   
   // Find the index of the currently active main widget
   const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
