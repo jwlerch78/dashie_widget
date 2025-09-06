@@ -19,6 +19,25 @@ function initializeWidgetMessages() {
 }
 
 // ---------------------
+// KEY MAPPING HELPER
+// ---------------------
+
+function getActionFromKey(key) {
+  const keyMap = {
+    "ArrowLeft": "left",
+    "ArrowRight": "right", 
+    "ArrowUp": "up",
+    "ArrowDown": "down",
+    "Enter": "enter",
+    "m": "menu",
+    "M": "menu",
+    " ": "space"
+  };
+  
+  return keyMap[key] || key; // Return mapped action or the key itself
+}
+
+// ---------------------
 // KEYBOARD EVENTS
 // ---------------------
 
@@ -82,7 +101,29 @@ export function initializeKeyboardEvents() {
       return;
     }
     
-    // Normal navigation
+    // If widget is focused, send ALL commands to widget except Escape
+    if (state.selectedCell) {
+      switch (e.key) {
+        case "Escape":
+        case "Backspace":
+          e.preventDefault();
+          handleBack(); // This will unfocus the widget
+          break;
+        default:
+          // Send all other keys to the widget
+          e.preventDefault();
+          const action = getActionFromKey(e.key);
+          if (action) {
+            import('../core/navigation.js').then(({ sendToWidget }) => {
+              sendToWidget(action);
+            });
+          }
+          break;
+      }
+      return;
+    }
+    
+    // Regular navigation when no widget is focused
     switch (e.key) {
       case "ArrowLeft": 
         e.preventDefault();
