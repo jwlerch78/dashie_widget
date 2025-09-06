@@ -3,6 +3,7 @@
 import { initializeEvents } from './core/events.js';
 import { updateFocus } from './core/navigation.js';
 import { renderGrid, renderSidebar } from './ui/grid.js';
+import { initializeSleepTimer } from './ui/settings.js';
 
 // ---------------------
 // APP INITIALIZATION
@@ -13,6 +14,9 @@ function initializeApp() {
   
   // Set up event listeners
   initializeEvents();
+  
+  // Initialize sleep timer system
+  initializeSleepTimer();
   
   // Render initial UI
   renderSidebar();
