@@ -13,8 +13,32 @@ export function initializeKeyboardEvents() {
     if (state.isAsleep) {
       e.preventDefault();
       import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
+      import('../ui/settings.js').then(({ startResleepTimer }) => startResleepTimer());
       return;
     }
+    
+    // Handle settings modal
+    import('../ui/settings.js').then(({ isSettingsOpen, moveSettingsFocus, handleSettingsEnter, closeSettings }) => {
+      if (isSettingsOpen()) {
+        e.preventDefault();
+        switch (e.key) {
+          case "ArrowLeft":
+          case "ArrowRight":
+          case "ArrowUp":
+          case "ArrowDown":
+            moveSettingsFocus(e.key.replace('Arrow', '').toLowerCase());
+            break;
+          case "Enter":
+            handleSettingsEnter();
+            break;
+          case "Escape":
+          case "Backspace":
+            closeSettings();
+            break;
+        }
+        return;
+      }
+    });
     
     // Handle exit confirmation dialog
     if (state.confirmDialog) {
@@ -43,6 +67,16 @@ export function initializeKeyboardEvents() {
     switch (e.key) {
       case "ArrowLeft": moveFocus("left"); break;
       case "ArrowRight": moveFocus("right"); break;
+      case "ArrowUp": moveFocus("up"); break;
+      case "ArrowDown": moveFocus("down"); break;
+      case "Enter": handleEnter(); break;
+      case "Escape": handleBack(); break;
+      case "Backspace": handleBack(); break;
+      case "m":
+      case "M": openMenuWithCurrentSelection(); break;
+    }
+  });
+}"); break;
       case "ArrowUp": moveFocus("up"); break;
       case "ArrowDown": moveFocus("down"); break;
       case "Enter": handleEnter(); break;
