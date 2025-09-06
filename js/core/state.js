@@ -10,13 +10,23 @@ export const elements = {
   sidebar: document.getElementById("sidebar")
 };
 
+// Widget URL mappings
+export const widgetUrls = {
+  calendar: "widgets/calendar.html",
+  clock: "widgets/clock.html", 
+  map: "widgets/map.html",
+  agenda: "widgets/agenda.html",
+  photos: "widgets/photos.html",
+  camera: "widgets/camera.html" // for future camera widget
+};
+
 // Widget layout configuration
 export const widgets = [
-  { id: "map", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations" },
-  { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "⏰ Clock" },
-  { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, label: "📅 Calendar" }, 
-  { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, label: "📝 Agenda" },
-  { id: "photos", row: 3, col: 2, rowSpan: 1, colSpan: 1, label: "🖼️ Photos" }
+  { id: "map", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations", url: widgetUrls.map },
+  { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "⏰ Clock", url: widgetUrls.clock },
+  { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, label: "📅 Calendar", url: widgetUrls.calendar }, 
+  { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, label: "📝 Agenda", url: widgetUrls.agenda },
+  { id: "photos", row: 3, col: 2, rowSpan: 1, colSpan: 1, label: "🖼️ Photos", url: widgetUrls.photos }
 ];
 
 // Map sidebar keys to main widget content
@@ -32,7 +42,8 @@ export const state = {
   focus: { type: "grid", row: 1, col: 1 }, // current focus for D-pad navigation
   selectedCell: null, // focused widget
   isAsleep: false, // sleep mode state
-  confirmDialog: null // exit confirmation dialog state
+  confirmDialog: null, // exit confirmation dialog state
+  widgetReadyStatus: new Map() // track which widgets are ready
 };
 
 // ---------------------
@@ -49,6 +60,13 @@ export function setSelectedCell(cell) {
 
 export function setCurrentMain(mainType) {
   state.currentMain = mainType;
+  
+  // Update the main widget's URL when switching content
+  const mainWidget = widgets.find(w => w.id === "main");
+  if (mainWidget && widgetUrls[mainType]) {
+    mainWidget.url = widgetUrls[mainType];
+    mainWidget.label = sidebarMapping[mainType] || mainWidget.label;
+  }
 }
 
 export function setSleepMode(sleeping) {
@@ -57,6 +75,14 @@ export function setSleepMode(sleeping) {
 
 export function setConfirmDialog(dialog) {
   state.confirmDialog = dialog;
+}
+
+export function setWidgetReady(widgetId, ready = true) {
+  state.widgetReadyStatus.set(widgetId, ready);
+}
+
+export function isWidgetReady(widgetId) {
+  return state.widgetReadyStatus.get(widgetId) || false;
 }
 
 export function findWidget(row, col) {
