@@ -130,6 +130,9 @@ export function initializeMouseEvents() {
   document.addEventListener("click", e => {
     if (state.confirmDialog || state.isAsleep) return;
     
+    // Don't close sidebar if widget is focused - let user interact with menu
+    if (state.selectedCell) return;
+    
     if (!elements.sidebar.contains(e.target) && elements.sidebar.classList.contains("expanded")) {
       elements.sidebar.classList.remove("expanded");
       if (state.focus.type === "menu") {
