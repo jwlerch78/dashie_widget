@@ -116,8 +116,9 @@ export function moveFocus(dir) {
 
 export function handleEnter() {
   if (state.isAsleep) {
-    // Import and call wakeUp
+    // Import and call wakeUp, then start resleep timer
     import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
+    import('../ui/settings.js').then(({ startResleepTimer }) => startResleepTimer());
     return;
   }
   
@@ -146,7 +147,7 @@ export function handleEnter() {
     if (menuKey === "sleep") {
       import('../ui/modals.js').then(({ enterSleepMode }) => enterSleepMode());
     } else if (menuKey === "settings") {
-      alert("Settings menu (placeholder)");  // TODO: hook into real settings
+      import('../ui/settings.js').then(({ showSettings }) => showSettings());
     } else if (menuKey === "reload") {
       location.reload();
     } else if (menuKey === "exit") {
