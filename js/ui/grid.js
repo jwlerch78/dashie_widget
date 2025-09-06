@@ -3,6 +3,60 @@
 import { state, elements, widgets, sidebarMapping, setFocus } from '../core/state.js';
 
 // ---------------------
+// WIDGET CREATION
+// ---------------------
+
+function createWidgetIframe(widget) {
+  const iframe = document.createElement("iframe");
+  iframe.src = widget.url || "about:blank";
+  iframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+  `;
+  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+  
+  // Add load event listener
+  iframe.addEventListener("load", () => {
+    console.log(`Widget iframe loaded: ${widget.id}`);
+  });
+  
+  // Add error handling
+  iframe.addEventListener("error", () => {
+    console.warn(`Widget iframe failed to load: ${widget.id}`);
+  });
+  
+  return iframe;
+}
+
+function createFallbackWidget(widget) {
+  const fallback = document.createElement("div");
+  fallback.style.cssText = `
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #444;
+    color: #999;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-direction: column;
+  `;
+  fallback.innerHTML = `
+    <div style="font-size: 24px; margin-bottom: 10px;">${widget.label}</div>
+    <div>Widget not available</div>
+    <div style="font-size: 12px; margin-top: 10px; color: #777;">URL: ${widget.url || 'No URL'}</div>
+  `;
+  return fallback;
+}
+
+// ---------------------
 // GRID RENDERING
 // ---------------------
 
@@ -16,10 +70,13 @@ export function renderGrid() {
     div.style.gridRow = `${w.row} / span ${w.rowSpan}`;
     div.style.gridColumn = `${w.col} / span ${w.colSpan}`;
 
-    if (w.id === "main") {
-      div.textContent = sidebarMapping[state.currentMain] || "🌟 Main Widget";
+    // Create iframe or fallback for widget content
+    if (w.url) {
+      const iframe = createWidgetIframe(w);
+      div.appendChild(iframe);
     } else {
-      div.textContent = w.label;
+      const fallback = createFallbackWidget(w);
+      div.appendChild(fallback);
     }
 
     elements.grid.appendChild(div);
