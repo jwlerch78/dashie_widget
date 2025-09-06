@@ -164,7 +164,7 @@ export function createMenuItem(item, type, globalIndex) {
 function addMenuItemEventListeners(div, type, globalIndex) {
   // Mouse / touch events
   div.addEventListener("mouseover", () => {
-    if (state.confirmDialog || state.isAsleep) return; // Don't respond when modal is open or asleep
+    if (state.confirmDialog || state.isAsleep || state.selectedCell) return; // Don't respond when widget is focused
     setFocus({ type: "menu", index: globalIndex });
     elements.sidebar.classList.add("expanded");
     
@@ -173,12 +173,19 @@ function addMenuItemEventListeners(div, type, globalIndex) {
   });
 
   div.addEventListener("mouseout", () => {
-    if (state.confirmDialog || state.isAsleep) return;
+    if (state.confirmDialog || state.isAsleep || state.selectedCell) return;
     if (state.focus.type !== "menu") elements.sidebar.classList.remove("expanded");
   });
 
   div.addEventListener("click", () => {
     if (state.confirmDialog || state.isAsleep) return;
+    
+    // Don't allow menu clicks when widget is focused
+    if (state.selectedCell) {
+      console.log("⚠️ Menu item clicked while widget focused - ignoring");
+      return;
+    }
+    
     setFocus({ type: "menu", index: globalIndex });
     
     // Import navigation functions
