@@ -115,14 +115,15 @@ html, body {
 /* Container for system functions mini-grid */
 .system-functions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 2px;
+  grid-template-columns: repeat(2, 18px);  /* fixed cell width */
+  grid-template-rows: repeat(2, 18px);     /* fixed cell height */
+  gap: 4px;                                /* tighter spacing */
   margin-top: auto;
-  margin-bottom: 10px;
-  width: 30px;
-  height: 30px;
+  margin-bottom: 16px;                     /* lifts grid up slightly */
   justify-content: center;
+  align-content: center;
+  width: auto;                             /* shrink to fit */
+  height: auto;
 }
 
 /* Expanded state - all items become full width with labels */
