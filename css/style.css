@@ -118,8 +118,8 @@ html, body {
   grid-template-rows: 1fr 1fr;
   gap: 1px;
   margin-top: auto;
-  margin-bottom: 15px;
-  width: 44px;
+  margin-bottom: 20px;
+  width: 33px;
   height: 44px;
   justify-content: center;
 }
