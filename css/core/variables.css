@@ -1,0 +1,55 @@
+/* css/core/variables.css - Theme Foundation */
+
+:root {
+  /* Background Colors */
+  --bg-primary: #222;
+  --bg-secondary: #333;
+  --bg-modal-backdrop: rgba(0, 0, 0, 0.7);
+  --bg-sleep: #000;
+  --bg-button: #666;
+  --bg-active: rgba(255, 255, 255, 0.2);
+  
+  /* Text Colors */
+  --text-primary: #fff;
+  --text-secondary: #ccc;
+  --text-muted: #999;
+  
+  /* Accent Colors */
+  --accent-orange: #ffaa00;
+  --accent-blue: #00aaff;
+  
+  /* Interactive States */
+  --outline-selected: var(--accent-orange);
+  --outline-focused: var(--accent-blue);
+  --outline-width-selected: 3px;
+  --outline-width-focused: 4px;
+  --outline-offset: 2px;
+  --outline-offset-widget: 3px;
+  
+  /* Glow Effects */
+  --glow-selected: 0 0 15px rgba(255, 170, 0, 0.5);
+  --glow-focused: 0 0 20px rgba(0, 170, 255, 0.6);
+  
+  /* Layout & Spacing */
+  --sidebar-width-collapsed: 60px;
+  --sidebar-width-expanded: 200px;
+  --grid-gap: 4px;
+  --border-radius: 12px;
+  --border-radius-small: 8px;
+  
+  /* Typography */
+  --font-size-base: 16px;
+  --font-size-large: 18px;
+  --font-size-small: 14px;
+  --font-size-heading: 24px;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Z-index Stack */
+  --z-sidebar: 10;
+  --z-modal: 999;
+  --z-sleep: 1000;
+}
