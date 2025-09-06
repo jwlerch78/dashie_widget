@@ -41,8 +41,8 @@ html, body {
   /* Gradient: left = semi-transparent dark, right = almost opaque */
   background: linear-gradient(
     to right,
-    rgba(34, 34, 34, 0.9) 0%,
-    rgba(34, 34, 34, 0.95) 100%
+    rgba(34, 34, 34, 0.9) 100%,
+    rgba(34, 34, 34, 0.95) 0%
   );
   align-items: flex-start;
   padding-left: 12px;
