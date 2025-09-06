@@ -145,17 +145,18 @@ export function handleEnter() {
     return;
   }
   
+  // If widget is focused, send Enter to widget instead of toggling focus
+  if (state.selectedCell) {
+    sendToWidget("enter");
+    return;
+  }
+  
   if (state.focus.type === "grid") {
     const el = document.querySelector(
       `.widget[data-row="${state.focus.row}"][data-col="${state.focus.col}"]`
     );
-    if (state.selectedCell === el) {
-      setSelectedCell(null);
-      console.log("🔓 Widget unfocused - returning to grid navigation");
-    } else {
-      setSelectedCell(el);
-      console.log("🔒 Widget focused - commands will be forwarded to iframe");
-    }
+    setSelectedCell(el);
+    console.log("🔒 Widget focused - commands will be forwarded to iframe");
   } else if (state.focus.type === "menu") {
     const menuItems = elements.sidebar.querySelectorAll(".menu-item");
     const menuItem = menuItems[state.focus.index];
@@ -177,6 +178,13 @@ export function handleEnter() {
         renderSidebar();
         console.log(`📱 Switched main widget to: ${menuKey}`);
       });
+    }
+  } else {
+    // If Enter pressed while not in menu, close expanded sidebar
+    if (elements.sidebar.classList.contains("expanded")) {
+      elements.sidebar.classList.remove("expanded");
+      setFocus({ type: "grid", row: 1, col: 1 });
+      console.log("📤 Sidebar closed via Enter key");
     }
   }
   updateFocus();
