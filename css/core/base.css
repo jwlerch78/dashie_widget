@@ -1,55 +1,61 @@
-/* css/core/variables.css - Theme Foundation */
+/* css/core/base.css - Base Layout & Reset */
 
-:root {
-  /* Background Colors */
-  --bg-primary: #222;
-  --bg-secondary: #333;
-  --bg-modal-backdrop: rgba(0, 0, 0, 0.7);
-  --bg-sleep: #000;
-  --bg-button: #666;
-  --bg-active: rgba(255, 255, 255, 0.2);
-  
-  /* Text Colors */
-  --text-primary: #fff;
-  --text-secondary: #ccc;
-  --text-muted: #999;
-  
-  /* Accent Colors */
-  --accent-orange: #ffaa00;
-  --accent-blue: #00aaff;
-  
-  /* Interactive States */
-  --outline-selected: var(--accent-orange);
-  --outline-focused: var(--accent-blue);
-  --outline-width-selected: 3px;
-  --outline-width-focused: 4px;
-  --outline-offset: 2px;
-  --outline-offset-widget: 3px;
-  
-  /* Glow Effects */
-  --glow-selected: 0 0 15px rgba(255, 170, 0, 0.5);
-  --glow-focused: 0 0 20px rgba(0, 170, 255, 0.6);
-  
-  /* Layout & Spacing */
-  --sidebar-width-collapsed: 60px;
-  --sidebar-width-expanded: 200px;
-  --grid-gap: 4px;
-  --border-radius: 12px;
-  --border-radius-small: 8px;
-  
-  /* Typography */
-  --font-size-base: 16px;
-  --font-size-large: 18px;
-  --font-size-small: 14px;
-  --font-size-heading: 24px;
-  
-  /* Transitions */
-  --transition-fast: 0.2s ease;
-  --transition-medium: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  
-  /* Z-index Stack */
-  --z-sidebar: 10;
-  --z-modal: 999;
-  --z-sleep: 1000;
+/* Reset & Normalize */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* prevent scrolling */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* App Layout Container */
+#app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sidebar Layout Container */
+#sidebar-wrapper {
+  width: var(--sidebar-width-collapsed);
+  position: relative;
+}
+
+/* Base Interactive States */
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  transition: all var(--transition-fast);
+}
+
+button:focus {
+  outline: none; /* We'll handle focus with our own system */
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
