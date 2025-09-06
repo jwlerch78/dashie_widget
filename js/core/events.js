@@ -167,15 +167,29 @@ export function initializeKeyboardEvents() {
 // ---------------------
 
 export function initializeMouseEvents() {
-  // Click outside menu to close it
+  // Simple click handler to close expanded sidebar
   document.addEventListener("click", e => {
-    if (state.confirmDialog || state.isAsleep) return;
+    // Skip if in special states
+    if (state.confirmDialog || state.isAsleep) {
+      return;
+    }
     
-    // Don't close sidebar if widget is focused - let user interact with menu
-    if (state.selectedCell) return;
+    const sidebarExpanded = elements.sidebar.classList.contains("expanded");
+    const clickedOnSidebar = elements.sidebar.contains(e.target);
     
-    if (!elements.sidebar.contains(e.target) && elements.sidebar.classList.contains("expanded")) {
+    console.log("Click detected:", {
+      sidebarExpanded,
+      clickedOnSidebar,
+      targetTag: e.target.tagName,
+      targetClass: e.target.className
+    });
+    
+    // Close sidebar if it's expanded and click was outside
+    if (sidebarExpanded && !clickedOnSidebar) {
+      console.log("🔒 Closing sidebar - clicked outside");
       elements.sidebar.classList.remove("expanded");
+      
+      // Return focus to grid if we were in menu
       if (state.focus.type === "menu") {
         setFocus({ type: "grid", row: 1, col: 1 });
         updateFocus();
