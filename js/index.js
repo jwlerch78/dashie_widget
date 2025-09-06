@@ -35,8 +35,8 @@ let selectedCell = null; // focused widget
 let isAsleep = false; // sleep mode state
 let confirmDialog = null; // exit confirmation dialog state
 
-/ ---------------------
-// SLEEP MODE (Updated)
+// ---------------------
+// SLEEP MODE
 // ---------------------
 
 function enterSleepMode() {
@@ -73,7 +73,7 @@ function wakeUp() {
 }
 
 // ---------------------
-// EXIT CONFIRMATION (Updated)
+// EXIT CONFIRMATION
 // ---------------------
 
 function showExitConfirmation() {
@@ -152,7 +152,6 @@ function updateExitButtonHighlight() {
   selectedBtn.classList.add("selected");
 }
 
-// No changes needed for these functions:
 function moveExitFocus(direction) {
   if (!confirmDialog) return;
   
@@ -175,6 +174,7 @@ function handleExitChoice(choice) {
   confirmDialog.element.remove();
   confirmDialog = null;
 }
+
 // ---------------------
 // RENDERING
 // ---------------------
@@ -236,10 +236,6 @@ function renderSidebar() {
   sidebarEl.appendChild(systemContainer);
 }
 
-// ---------------------
-// MENU CREATION (Updated)
-// ---------------------
-
 function createMenuItem(item, type, globalIndex) {
   const div = document.createElement("div");
   div.classList.add("menu-item", type);
@@ -263,9 +259,9 @@ function createMenuItem(item, type, globalIndex) {
   label.textContent = item.label || "";
   div.appendChild(label);
 
-  // Mouse / touch events (no changes needed)
+  // Mouse / touch events
   div.addEventListener("mouseover", () => {
-    if (confirmDialog || isAsleep) return;
+    if (confirmDialog || isAsleep) return; // Don't respond when modal is open or asleep
     focus = { type: "menu", index: globalIndex };
     sidebarEl.classList.add("expanded");
     updateFocus();
