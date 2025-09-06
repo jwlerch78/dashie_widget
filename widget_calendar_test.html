@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Widget</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #333;
+      color: white;
+      height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .widget-header {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .command-display {
+      background: #444;
+      border: 2px solid #666;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 10px 0;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.3s ease;
+    }
+
+    .command-display.active {
+      border-color: #ffaa00;
+      background: #555;
+      box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+    }
+
+    .command-history {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #ccc;
+      text-align: center;
+    }
+
+    .command-history ul {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+
+    .command-history li {
+      padding: 5px;
+      border-bottom: 1px solid #555;
+    }
+
+    .status {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="status">📅 Calendar Widget</div>
+  
+  <div class="widget-header">
+    📅 Calendar Widget
+  </div>
+  
+  <div class="command-display" id="currentCommand">
+    Waiting for input...
+  </div>
+  
+  <div class="command-history">
+    <strong>Recent Commands:</strong>
+    <ul id="commandHistory">
+      <!-- Commands will appear here -->
+    </ul>
+  </div>
+
+  <script>
+    let commandCount = 0;
+    const maxHistoryItems = 5;
+
+    function displayCommand(action) {
+      const currentCommandEl = document.getElementById('currentCommand');
+      const historyEl = document.getElementById('commandHistory');
+      
+      commandCount++;
+      const timestamp = new Date().toLocaleTimeString();
+      
+      // Update current command display
+      currentCommandEl.textContent = `Command: ${action.toUpperCase()}`;
+      currentCommandEl.classList.add('active');
+      
+      // Remove active state after animation
+      setTimeout(() => {
+        currentCommandEl.classList.remove('active');
+      }, 500);
+      
+      // Add to history
+      const historyItem = document.createElement('li');
+      historyItem.textContent = `${commandCount}. ${action} (${timestamp})`;
+      historyEl.insertBefore(historyItem, historyEl.firstChild);
+      
+      // Keep only recent items
+      while (historyEl.children.length > maxHistoryItems) {
+        historyEl.removeChild(historyEl.lastChild);
+      }
+    }
+
+    // Listen for commands from parent dashboard
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.action) {
+        displayCommand(event.data.action);
+        
+        // Log for debugging
+        console.log('Calendar widget received command:', event.data.action);
+      }
+    });
+
+    // Send ready signal to parent
+    window.addEventListener('load', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ 
+          type: 'widget-ready', 
+          widget: 'calendar' 
+        }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
