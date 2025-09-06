@@ -35,8 +35,8 @@ let selectedCell = null; // focused widget
 let isAsleep = false; // sleep mode state
 let confirmDialog = null; // exit confirmation dialog state
 
-// ---------------------
-// SLEEP MODE
+/ ---------------------
+// SLEEP MODE (Updated)
 // ---------------------
 
 function enterSleepMode() {
@@ -45,23 +45,13 @@ function enterSleepMode() {
   // Create sleep overlay - pure black screen with no content
   const sleepOverlay = document.createElement("div");
   sleepOverlay.id = "sleep-overlay";
-  sleepOverlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    z-index: 1000;
-    cursor: pointer;
-    transition: opacity 0.5s ease;
-  `;
+  sleepOverlay.className = "sleep-overlay";
   
   document.body.appendChild(sleepOverlay);
   
-  // Fade in
+  // Fade in using CSS class
   setTimeout(() => {
-    sleepOverlay.style.opacity = "1";
+    sleepOverlay.classList.add("visible");
   }, 10);
   
   // Add wake up listeners
@@ -75,7 +65,7 @@ function wakeUp() {
   const sleepOverlay = document.getElementById("sleep-overlay");
   
   if (sleepOverlay) {
-    sleepOverlay.style.opacity = "0";
+    sleepOverlay.classList.remove("visible");
     setTimeout(() => {
       sleepOverlay.remove();
     }, 500);
@@ -83,7 +73,7 @@ function wakeUp() {
 }
 
 // ---------------------
-// EXIT CONFIRMATION
+// EXIT CONFIRMATION (Updated)
 // ---------------------
 
 function showExitConfirmation() {
@@ -92,38 +82,19 @@ function showExitConfirmation() {
   // Create modal backdrop
   const backdrop = document.createElement("div");
   backdrop.id = "exit-backdrop";
-  backdrop.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
+  backdrop.className = "modal-backdrop";
   
   // Create confirmation dialog
   const dialog = document.createElement("div");
   dialog.id = "exit-dialog";
-  dialog.style.cssText = `
-    background: #333;
-    color: white;
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    min-width: 300px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  `;
+  dialog.className = "exit-dialog";
   
-  // Dialog content - both buttons have same gray background
+  // Dialog content - clean HTML without inline styles
   dialog.innerHTML = `
-    <h2 style="margin: 0 0 20px 0; font-size: 24px;">Are you sure you want to exit?</h2>
-    <div id="exit-buttons" style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-      <button id="exit-yes" style="padding: 12px 24px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">Yes</button>
-      <button id="exit-no" style="padding: 12px 24px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">No</button>
+    <h2>Are you sure you want to exit?</h2>
+    <div class="exit-buttons">
+      <button class="exit-button" id="exit-yes">Yes</button>
+      <button class="exit-button" id="exit-no">No</button>
     </div>
   `;
   
@@ -171,18 +142,17 @@ function showExitConfirmation() {
 function updateExitButtonHighlight() {
   if (!confirmDialog) return;
   
-  // Clear all highlights
+  // Clear all highlights using CSS classes
   Object.values(confirmDialog.buttons).forEach(btn => {
-    btn.style.outline = "3px solid transparent";
-    btn.style.transform = "scale(1)";
+    btn.classList.remove("selected", "focused");
   });
   
-  // Highlight selected button
+  // Highlight selected button using CSS class
   const selectedBtn = confirmDialog.buttons[confirmDialog.selectedButton];
-  selectedBtn.style.outline = "3px solid #ffaa00";
-  selectedBtn.style.transform = "scale(1.05)";
+  selectedBtn.classList.add("selected");
 }
 
+// No changes needed for these functions:
 function moveExitFocus(direction) {
   if (!confirmDialog) return;
   
@@ -205,7 +175,6 @@ function handleExitChoice(choice) {
   confirmDialog.element.remove();
   confirmDialog = null;
 }
-
 // ---------------------
 // RENDERING
 // ---------------------
@@ -267,6 +236,10 @@ function renderSidebar() {
   sidebarEl.appendChild(systemContainer);
 }
 
+// ---------------------
+// MENU CREATION (Updated)
+// ---------------------
+
 function createMenuItem(item, type, globalIndex) {
   const div = document.createElement("div");
   div.classList.add("menu-item", type);
@@ -278,12 +251,10 @@ function createMenuItem(item, type, globalIndex) {
     div.classList.add("active");
   }
 
-  // Icon
+  // Icon - using CSS class instead of inline styles
   const img = document.createElement("img");
   img.src = item.iconSrc;
-  img.classList.add("menu-icon");
-  img.style.objectFit = "contain";
-  img.style.filter = "invert(100%)"; // force white
+  img.classList.add("menu-icon"); // CSS handles objectFit and filter
   div.appendChild(img);
 
   // Label text (hidden by default, shown when expanded)
@@ -292,9 +263,9 @@ function createMenuItem(item, type, globalIndex) {
   label.textContent = item.label || "";
   div.appendChild(label);
 
-  // Mouse / touch events
+  // Mouse / touch events (no changes needed)
   div.addEventListener("mouseover", () => {
-    if (confirmDialog || isAsleep) return; // Don't respond when modal is open or asleep
+    if (confirmDialog || isAsleep) return;
     focus = { type: "menu", index: globalIndex };
     sidebarEl.classList.add("expanded");
     updateFocus();
