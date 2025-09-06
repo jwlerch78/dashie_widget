@@ -1,0 +1,142 @@
+// js/ui/grid.js - Widget Grid & Sidebar Rendering
+
+import { state, elements, widgets, sidebarMapping } from '../core/state.js';
+
+// ---------------------
+// GRID RENDERING
+// ---------------------
+
+export function renderGrid() {
+  elements.grid.innerHTML = "";
+  widgets.forEach(w => {
+    const div = document.createElement("div");
+    div.classList.add("widget");
+    div.dataset.row = w.row;
+    div.dataset.col = w.col;
+    div.style.gridRow = `${w.row} / span ${w.rowSpan}`;
+    div.style.gridColumn = `${w.col} / span ${w.colSpan}`;
+
+    if (w.id === "main") {
+      div.textContent = sidebarMapping[state.currentMain] || "🌟 Main Widget";
+    } else {
+      div.textContent = w.label;
+    }
+
+    elements.grid.appendChild(div);
+  });
+}
+
+// ---------------------
+// SIDEBAR RENDERING
+// ---------------------
+
+export function renderSidebar() {
+  elements.sidebar.innerHTML = ""; // clear previous
+
+  // Add Dashie logo (only visible when expanded)
+  const logo = document.createElement("img");
+  logo.src = "icons/Dashie_Full_Logo_White_Transparent.png";
+  logo.classList.add("dashie-logo");
+  logo.alt = "Dashie";
+  elements.sidebar.appendChild(logo);
+
+  // Separate main and system items
+  const mainItems = sidebarOptions.filter(item => item.type === "main");
+  const systemItems = sidebarOptions.filter(item => item.type === "system");
+
+  // Create main items (content selection)
+  mainItems.forEach((item, index) => {
+    const div = createMenuItem(item, "main", index);
+    elements.sidebar.appendChild(div);
+  });
+
+  // Add separator
+  const separator = document.createElement("div");
+  separator.classList.add("menu-separator");
+  elements.sidebar.appendChild(separator);
+
+  // Create system functions container (2x2 grid)
+  const systemContainer = document.createElement("div");
+  systemContainer.classList.add("system-functions");
+
+  systemItems.forEach((item, index) => {
+    const div = createMenuItem(item, "system", index + mainItems.length);
+    systemContainer.appendChild(div);
+  });
+
+  elements.sidebar.appendChild(systemContainer);
+}
+
+// ---------------------
+// MENU ITEM CREATION
+// ---------------------
+
+export function createMenuItem(item, type, globalIndex) {
+  const div = document.createElement("div");
+  div.classList.add("menu-item", type);
+  div.dataset.menu = item.id;
+  div.dataset.globalIndex = globalIndex; // for focus navigation
+
+  // Highlight active main widget
+  if (["calendar","map","camera"].includes(item.id) && item.id === state.currentMain) {
+    div.classList.add("active");
+  }
+
+  // Icon - using CSS class instead of inline styles
+  const img = document.createElement("img");
+  img.src = item.iconSrc;
+  img.classList.add("menu-icon"); // CSS handles objectFit and filter
+  div.appendChild(img);
+
+  // Label text (hidden by default, shown when expanded)
+  const label = document.createElement("span");
+  label.classList.add("menu-label");
+  label.textContent = item.label || "";
+  div.appendChild(label);
+
+  // Add event listeners
+  addMenuItemEventListeners(div, type, globalIndex);
+
+  return div;
+}
+
+// ---------------------
+// EVENT LISTENERS
+// ---------------------
+
+function addMenuItemEventListeners(div, type, globalIndex) {
+  // Import navigation functions
+  import('../core/navigation.js').then(({ updateFocus, handleEnter }) => {
+    import('../core/state.js').then(({ setFocus }) => {
+      
+      // Mouse / touch events
+      div.addEventListener("mouseover", () => {
+        if (state.confirmDialog || state.isAsleep) return; // Don't respond when modal is open or asleep
+        setFocus({ type: "menu", index: globalIndex });
+        elements.sidebar.classList.add("expanded");
+        updateFocus();
+      });
+
+      div.addEventListener("mouseout", () => {
+        if (state.confirmDialog || state.isAsleep) return;
+        if (state.focus.type !== "menu") elements.sidebar.classList.remove("expanded");
+      });
+
+      div.addEventListener("click", () => {
+        if (state.confirmDialog || state.isAsleep) return;
+        setFocus({ type: "menu", index: globalIndex });
+        
+        // For system items, expand the menu first
+        if (type === "system") {
+          elements.sidebar.classList.add("expanded");
+          updateFocus();
+          // Small delay to show expansion, then execute
+          setTimeout(() => handleEnter(), 150);
+        } else {
+          handleEnter();
+        }
+      });
+      
+    });
+  });
+}
