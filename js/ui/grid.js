@@ -70,6 +70,25 @@ export function renderGrid() {
     div.style.gridRow = `${w.row} / span ${w.rowSpan}`;
     div.style.gridColumn = `${w.col} / span ${w.colSpan}`;
 
+    // Add click handler to widget container to close sidebar
+    div.addEventListener("click", (e) => {
+      console.log("🖱️ Widget container clicked:", w.id);
+      
+      // Close sidebar if expanded
+      if (elements.sidebar.classList.contains("expanded")) {
+        console.log("✅ Closing sidebar from widget click");
+        elements.sidebar.classList.remove("expanded");
+        
+        // Return focus to grid if we were in menu
+        if (state.focus.type === "menu") {
+          import('../core/navigation.js').then(({ updateFocus }) => {
+            setFocus({ type: "grid", row: w.row, col: w.col });
+            updateFocus();
+          });
+        }
+      }
+    });
+
     // Create iframe or fallback for widget content
     if (w.url) {
       const iframe = createWidgetIframe(w);
