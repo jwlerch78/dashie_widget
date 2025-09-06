@@ -32,6 +32,172 @@ const sidebarEl = document.getElementById("sidebar");
 
 let focus = { type: "grid", row: 1, col: 1 }; // current focus for D-pad navigation
 let selectedCell = null; // focused widget
+let isAsleep = false; // sleep mode state
+let confirmDialog = null; // exit confirmation dialog state
+
+// ---------------------
+// SLEEP MODE
+// ---------------------
+
+function enterSleepMode() {
+  isAsleep = true;
+  
+  // Create sleep overlay
+  const sleepOverlay = document.createElement("div");
+  sleepOverlay.id = "sleep-overlay";
+  sleepOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 24px;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+  `;
+  
+  sleepOverlay.textContent = "💤";
+  document.body.appendChild(sleepOverlay);
+  
+  // Fade in
+  setTimeout(() => {
+    sleepOverlay.style.opacity = "1";
+  }, 10);
+  
+  // Add wake up listeners
+  sleepOverlay.addEventListener("click", wakeUp);
+}
+
+function wakeUp() {
+  if (!isAsleep) return;
+  
+  isAsleep = false;
+  const sleepOverlay = document.getElementById("sleep-overlay");
+  
+  if (sleepOverlay) {
+    sleepOverlay.style.opacity = "0";
+    setTimeout(() => {
+      sleepOverlay.remove();
+    }, 500);
+  }
+}
+
+// ---------------------
+// EXIT CONFIRMATION
+// ---------------------
+
+function showExitConfirmation() {
+  if (confirmDialog) return; // Already showing
+  
+  // Create modal backdrop
+  const backdrop = document.createElement("div");
+  backdrop.id = "exit-backdrop";
+  backdrop.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  
+  // Create confirmation dialog
+  const dialog = document.createElement("div");
+  dialog.id = "exit-dialog";
+  dialog.style.cssText = `
+    background: #333;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 300px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  `;
+  
+  // Dialog content
+  dialog.innerHTML = `
+    <h2 style="margin: 0 0 20px 0; font-size: 24px;">Are you sure you want to exit?</h2>
+    <div id="exit-buttons" style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+      <button id="exit-yes" style="padding: 12px 24px; background: #d32f2f; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">Yes</button>
+      <button id="exit-no" style="padding: 12px 24px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">No</button>
+    </div>
+  `;
+  
+  backdrop.appendChild(dialog);
+  document.body.appendChild(backdrop);
+  
+  // Set up confirmation state
+  confirmDialog = {
+    element: backdrop,
+    selectedButton: "no", // default to "no"
+    buttons: {
+      yes: dialog.querySelector("#exit-yes"),
+      no: dialog.querySelector("#exit-no")
+    }
+  };
+  
+  // Update button highlighting
+  updateExitButtonHighlight();
+  
+  // Add event listeners
+  confirmDialog.buttons.yes.addEventListener("click", () => handleExitChoice("yes"));
+  confirmDialog.buttons.no.addEventListener("click", () => handleExitChoice("no"));
+  
+  // Click backdrop to cancel
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) {
+      handleExitChoice("no");
+    }
+  });
+}
+
+function updateExitButtonHighlight() {
+  if (!confirmDialog) return;
+  
+  // Clear all highlights
+  Object.values(confirmDialog.buttons).forEach(btn => {
+    btn.style.outline = "3px solid transparent";
+    btn.style.transform = "scale(1)";
+  });
+  
+  // Highlight selected button
+  const selectedBtn = confirmDialog.buttons[confirmDialog.selectedButton];
+  selectedBtn.style.outline = "3px solid #ffaa00";
+  selectedBtn.style.transform = "scale(1.05)";
+}
+
+function moveExitFocus(direction) {
+  if (!confirmDialog) return;
+  
+  if (direction === "left" || direction === "right") {
+    confirmDialog.selectedButton = confirmDialog.selectedButton === "yes" ? "no" : "yes";
+    updateExitButtonHighlight();
+  }
+}
+
+function handleExitChoice(choice) {
+  if (!confirmDialog) return;
+  
+  if (choice === "yes") {
+    // In a real app, this would close the application
+    alert("Exiting Dashie...");
+    // For demo purposes, we'll just close the dialog
+  }
+  
+  // Remove dialog
+  confirmDialog.element.remove();
+  confirmDialog = null;
+}
 
 // ---------------------
 // RENDERING
@@ -121,16 +287,19 @@ function createMenuItem(item, type, globalIndex) {
 
   // Mouse / touch events
   div.addEventListener("mouseover", () => {
+    if (confirmDialog || isAsleep) return; // Don't respond when modal is open or asleep
     focus = { type: "menu", index: globalIndex };
     sidebarEl.classList.add("expanded");
     updateFocus();
   });
 
   div.addEventListener("mouseout", () => {
+    if (confirmDialog || isAsleep) return;
     if (focus.type !== "menu") sidebarEl.classList.remove("expanded");
   });
 
   div.addEventListener("click", () => {
+    if (confirmDialog || isAsleep) return;
     focus = { type: "menu", index: globalIndex };
     
     // For system items, expand the menu first
@@ -148,6 +317,8 @@ function createMenuItem(item, type, globalIndex) {
 }
 
 function updateFocus() {
+  if (confirmDialog || isAsleep) return; // Don't update focus when modal is open or asleep
+  
   // clear all highlights
   document.querySelectorAll(".widget, .menu-item")
     .forEach(el => el.classList.remove("selected", "focused"));
@@ -195,6 +366,8 @@ function sendToWidget(action) {
 }
 
 function moveFocus(dir) {
+  if (isAsleep || confirmDialog) return; // Don't move focus when asleep or in modal
+  
   if (selectedCell) {
     // Widget is focused — send input there
     sendToWidget(dir);
@@ -252,6 +425,16 @@ function moveFocus(dir) {
 // ---------------------
 
 function handleEnter() {
+  if (isAsleep) {
+    wakeUp();
+    return;
+  }
+  
+  if (confirmDialog) {
+    handleExitChoice(confirmDialog.selectedButton);
+    return;
+  }
+  
   if (focus.type === "grid") {
     const el = document.querySelector(
       `.widget[data-row="${focus.row}"][data-col="${focus.col}"]`
@@ -267,13 +450,13 @@ function handleEnter() {
     const menuKey = menuItem?.dataset?.menu;
 
     if (menuKey === "sleep") {
-      alert("Sleep function (placeholder)");  // TODO: hook into real sleep
+      enterSleepMode();
     } else if (menuKey === "settings") {
       alert("Settings menu (placeholder)");  // TODO: hook into real settings
     } else if (menuKey === "reload") {
       location.reload();
     } else if (menuKey === "exit") {
-      alert("Exit Dashie (placeholder)"); // TODO: hook into real exit
+      showExitConfirmation();
     } else if (menuKey) {
       // Main content items
       currentMain = menuKey;
@@ -285,6 +468,16 @@ function handleEnter() {
 }
 
 function handleBack() {
+  if (isAsleep) {
+    wakeUp();
+    return;
+  }
+  
+  if (confirmDialog) {
+    handleExitChoice("no"); // Default to "no" when pressing back
+    return;
+  }
+  
   if (focus.type === "menu") {
     // If in menu, collapse it and return to grid (map in top-left)
     sidebarEl.classList.remove("expanded");
@@ -297,6 +490,8 @@ function handleBack() {
 }
 
 function openMenuWithCurrentSelection() {
+  if (isAsleep || confirmDialog) return;
+  
   // Find the index of the currently active main widget
   const currentMainIndex = sidebarOptions.findIndex(item => item.id === currentMain);
   focus = { type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 };
@@ -309,6 +504,33 @@ function openMenuWithCurrentSelection() {
 // ---------------------
 
 document.addEventListener("keydown", e => {
+  // Handle sleep mode - any key wakes up
+  if (isAsleep) {
+    e.preventDefault();
+    wakeUp();
+    return;
+  }
+  
+  // Handle exit confirmation dialog
+  if (confirmDialog) {
+    e.preventDefault();
+    switch (e.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        moveExitFocus(e.key === "ArrowLeft" ? "left" : "right");
+        break;
+      case "Enter":
+        handleExitChoice(confirmDialog.selectedButton);
+        break;
+      case "Escape":
+      case "Backspace":
+        handleExitChoice("no");
+        break;
+    }
+    return;
+  }
+  
+  // Normal navigation
   switch (e.key) {
     case "ArrowLeft": moveFocus("left"); break;
     case "ArrowRight": moveFocus("right"); break;
@@ -324,6 +546,8 @@ document.addEventListener("keydown", e => {
 
 // Click outside menu to close it
 document.addEventListener("click", e => {
+  if (confirmDialog || isAsleep) return;
+  
   if (!sidebarEl.contains(e.target) && sidebarEl.classList.contains("expanded")) {
     sidebarEl.classList.remove("expanded");
     if (focus.type === "menu") {
