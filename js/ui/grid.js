@@ -70,14 +70,37 @@ export function renderGrid() {
     div.dataset.col = w.col;
     div.style.gridRow = `${w.row} / span ${w.rowSpan}`;
     div.style.gridColumn = `${w.col} / span ${w.colSpan}`;
+    div.style.position = "relative"; // For overlay positioning
 
-    // ADD: Click handler to widget container to close sidebar
-    div.addEventListener("click", (e) => {
-      console.log("🖱️ Widget container clicked:", w.id);
+    // Create click overlay that sits on top of iframe
+    const clickOverlay = document.createElement("div");
+    clickOverlay.className = "widget-click-overlay";
+    clickOverlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      pointer-events: none;
+      background: transparent;
+    `;
+
+    // Function to enable/disable click overlay
+    const updateOverlay = () => {
+      const sidebarExpanded = elements.sidebar.classList.contains("expanded");
+      clickOverlay.style.pointerEvents = sidebarExpanded ? "auto" : "none";
+    };
+
+    // Click handler on overlay (not iframe)
+    clickOverlay.addEventListener("click", (e) => {
+      console.log("🖱️ Widget overlay clicked:", w.id);
+      e.preventDefault();
+      e.stopPropagation();
       
       // Close sidebar if expanded
       if (elements.sidebar.classList.contains("expanded")) {
-        console.log("✅ Closing sidebar from widget click");
+        console.log("✅ Closing sidebar from widget overlay click");
         elements.sidebar.classList.remove("expanded");
         
         // Return focus to this specific widget
@@ -88,7 +111,14 @@ export function renderGrid() {
           });
         }
       }
+      
+      // Update overlay state after sidebar change
+      setTimeout(updateOverlay, 10);
     });
+
+    // Monitor sidebar state changes
+    const observer = new MutationObserver(() => updateOverlay());
+    observer.observe(elements.sidebar, { attributes: true, attributeFilter: ['class'] });
 
     // Create iframe or fallback for widget content
     if (w.url) {
@@ -98,6 +128,12 @@ export function renderGrid() {
       const fallback = createFallbackWidget(w);
       div.appendChild(fallback);
     }
+
+    // Add overlay on top
+    div.appendChild(clickOverlay);
+    
+    // Initial overlay state
+    updateOverlay();
 
     elements.grid.appendChild(div);
   });
