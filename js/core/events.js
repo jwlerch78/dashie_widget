@@ -167,33 +167,76 @@ export function initializeKeyboardEvents() {
 // ---------------------
 
 export function initializeMouseEvents() {
-  // Simple click handler to close expanded sidebar
+  // Debug click handler to figure out why sidebar won't close
   document.addEventListener("click", e => {
-    // Skip if in special states
-    if (state.confirmDialog || state.isAsleep) {
+    // Get all the details we need
+    const sidebarElement = elements.sidebar;
+    const sidebarExpanded = sidebarElement.classList.contains("expanded");
+    const clickedOnSidebar = sidebarElement.contains(e.target);
+    
+    console.log("🖱️ CLICK DEBUG:", {
+      // Basic state
+      isAsleep: state.isAsleep,
+      confirmDialog: !!state.confirmDialog,
+      selectedCell: !!state.selectedCell,
+      
+      // Sidebar state
+      sidebarExpanded: sidebarExpanded,
+      sidebarElement: sidebarElement,
+      sidebarId: sidebarElement.id,
+      
+      // Click details
+      clickTarget: e.target,
+      clickTargetTag: e.target.tagName,
+      clickTargetId: e.target.id,
+      clickTargetClass: e.target.className,
+      clickedOnSidebar: clickedOnSidebar,
+      
+      // Focus state
+      currentFocus: state.focus,
+      
+      // Should close calculation
+      shouldClose: sidebarExpanded && !clickedOnSidebar && !state.confirmDialog && !state.isAsleep
+    });
+    
+    // Early returns that prevent closing
+    if (state.confirmDialog) {
+      console.log("❌ Not closing sidebar: confirm dialog open");
       return;
     }
     
-    const sidebarExpanded = elements.sidebar.classList.contains("expanded");
-    const clickedOnSidebar = elements.sidebar.contains(e.target);
+    if (state.isAsleep) {
+      console.log("❌ Not closing sidebar: asleep");
+      return;
+    }
     
-    console.log("Click detected:", {
-      sidebarExpanded,
-      clickedOnSidebar,
-      targetTag: e.target.tagName,
-      targetClass: e.target.className
-    });
+    if (!sidebarExpanded) {
+      console.log("❌ Not closing sidebar: not expanded");
+      return;
+    }
     
-    // Close sidebar if it's expanded and click was outside
-    if (sidebarExpanded && !clickedOnSidebar) {
-      console.log("🔒 Closing sidebar - clicked outside");
+    if (clickedOnSidebar) {
+      console.log("❌ Not closing sidebar: clicked on sidebar");
+      return;
+    }
+    
+    // If we get here, we should close the sidebar
+    console.log("✅ CLOSING SIDEBAR: all conditions met");
+    
+    try {
       elements.sidebar.classList.remove("expanded");
+      console.log("✅ Sidebar class 'expanded' removed");
       
       // Return focus to grid if we were in menu
       if (state.focus.type === "menu") {
+        console.log("✅ Returning focus to grid");
         setFocus({ type: "grid", row: 1, col: 1 });
         updateFocus();
       }
+      
+      console.log("✅ Sidebar close complete");
+    } catch (error) {
+      console.error("❌ Error closing sidebar:", error);
     }
   });
 }
