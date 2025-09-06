@@ -1,6 +1,6 @@
 // js/ui/grid.js - Widget Grid & Sidebar Rendering
 
-import { state, elements, widgets, sidebarMapping } from '../core/state.js';
+import { state, elements, widgets, sidebarMapping, setFocus } from '../core/state.js';
 
 // ---------------------
 // GRID RENDERING
@@ -105,38 +105,36 @@ export function createMenuItem(item, type, globalIndex) {
 // ---------------------
 
 function addMenuItemEventListeners(div, type, globalIndex) {
-  // Import navigation functions
-  import('../core/navigation.js').then(({ updateFocus, handleEnter }) => {
-    import('../core/state.js').then(({ setFocus }) => {
-      
-      // Mouse / touch events
-      div.addEventListener("mouseover", () => {
-        if (state.confirmDialog || state.isAsleep) return; // Don't respond when modal is open or asleep
-        setFocus({ type: "menu", index: globalIndex });
+  // Mouse / touch events
+  div.addEventListener("mouseover", () => {
+    if (state.confirmDialog || state.isAsleep) return; // Don't respond when modal is open or asleep
+    setFocus({ type: "menu", index: globalIndex });
+    elements.sidebar.classList.add("expanded");
+    
+    // Import updateFocus and call it
+    import('../core/navigation.js').then(({ updateFocus }) => updateFocus());
+  });
+
+  div.addEventListener("mouseout", () => {
+    if (state.confirmDialog || state.isAsleep) return;
+    if (state.focus.type !== "menu") elements.sidebar.classList.remove("expanded");
+  });
+
+  div.addEventListener("click", () => {
+    if (state.confirmDialog || state.isAsleep) return;
+    setFocus({ type: "menu", index: globalIndex });
+    
+    // Import navigation functions
+    import('../core/navigation.js').then(({ updateFocus, handleEnter }) => {
+      // For system items, expand the menu first
+      if (type === "system") {
         elements.sidebar.classList.add("expanded");
         updateFocus();
-      });
-
-      div.addEventListener("mouseout", () => {
-        if (state.confirmDialog || state.isAsleep) return;
-        if (state.focus.type !== "menu") elements.sidebar.classList.remove("expanded");
-      });
-
-      div.addEventListener("click", () => {
-        if (state.confirmDialog || state.isAsleep) return;
-        setFocus({ type: "menu", index: globalIndex });
-        
-        // For system items, expand the menu first
-        if (type === "system") {
-          elements.sidebar.classList.add("expanded");
-          updateFocus();
-          // Small delay to show expansion, then execute
-          setTimeout(() => handleEnter(), 150);
-        } else {
-          handleEnter();
-        }
-      });
-      
+        // Small delay to show expansion, then execute
+        setTimeout(() => handleEnter(), 150);
+      } else {
+        handleEnter();
+      }
     });
   });
 }
