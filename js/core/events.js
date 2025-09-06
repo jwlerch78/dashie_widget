@@ -2,7 +2,6 @@
 
 import { state, elements, setFocus } from './state.js';
 import { moveFocus, handleEnter, handleBack, openMenuWithCurrentSelection, updateFocus } from './navigation.js';
-import { wakeUp, moveExitFocus, handleExitChoice } from '../ui/modals.js';
 
 // ---------------------
 // KEYBOARD EVENTS
@@ -13,26 +12,30 @@ export function initializeKeyboardEvents() {
     // Handle sleep mode - any key wakes up
     if (state.isAsleep) {
       e.preventDefault();
-      wakeUp();
+      import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
       return;
     }
     
     // Handle exit confirmation dialog
     if (state.confirmDialog) {
       e.preventDefault();
-      switch (e.key) {
-        case "ArrowLeft":
-        case "ArrowRight":
-          moveExitFocus(e.key === "ArrowLeft" ? "left" : "right");
-          break;
-        case "Enter":
-          handleExitChoice(state.confirmDialog.selectedButton);
-          break;
-        case "Escape":
-        case "Backspace":
-          handleExitChoice("no");
-          break;
-      }
+      
+      // Import modal functions
+      import('../ui/modals.js').then(({ moveExitFocus, handleExitChoice }) => {
+        switch (e.key) {
+          case "ArrowLeft":
+          case "ArrowRight":
+            moveExitFocus(e.key === "ArrowLeft" ? "left" : "right");
+            break;
+          case "Enter":
+            handleExitChoice(state.confirmDialog.selectedButton);
+            break;
+          case "Escape":
+          case "Backspace":
+            handleExitChoice("no");
+            break;
+        }
+      });
       return;
     }
     
