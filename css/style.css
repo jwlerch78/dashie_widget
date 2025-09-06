@@ -114,15 +114,14 @@ html, body {
 /* Container for system functions mini-grid */
 .system-functions {
   display: grid;
-  grid-template-columns: auto auto;   /* don’t stretch */
-  grid-template-rows: auto auto;
-  gap: 2px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
   margin-top: auto;
-  margin-bottom: 10px;
-  margin-left: auto;
-  margin-right: auto;
-  width: auto;   /* let content define width */
-  height: auto;  /* let content define height */
+  margin-bottom: 15px;
+  width: 44px;
+  height: 44px;
+  justify-content: center;
 }
 
 /* Expanded state - all items become full width with labels */
