@@ -1,7 +1,22 @@
 // js/core/events.js - Global Event Handlers
 
-import { state, elements, setFocus } from './state.js';
+import { state, elements, setFocus, setWidgetReady } from './state.js';
 import { moveFocus, handleEnter, handleBack, openMenuWithCurrentSelection, updateFocus } from './navigation.js';
+
+// ---------------------
+// WIDGET MESSAGE HANDLING
+// ---------------------
+
+function initializeWidgetMessages() {
+  // Listen for messages from widgets
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'widget-ready') {
+      const widgetId = event.data.widget;
+      setWidgetReady(widgetId, true);
+      console.log(`🚀 Widget ready: ${widgetId}`);
+    }
+  });
+}
 
 // ---------------------
 // KEYBOARD EVENTS
@@ -69,15 +84,39 @@ export function initializeKeyboardEvents() {
     
     // Normal navigation
     switch (e.key) {
-      case "ArrowLeft": moveFocus("left"); break;
-      case "ArrowRight": moveFocus("right"); break;
-      case "ArrowUp": moveFocus("up"); break;
-      case "ArrowDown": moveFocus("down"); break;
-      case "Enter": handleEnter(); break;
-      case "Escape": handleBack(); break;
-      case "Backspace": handleBack(); break;
+      case "ArrowLeft": 
+        e.preventDefault();
+        moveFocus("left"); 
+        break;
+      case "ArrowRight": 
+        e.preventDefault();
+        moveFocus("right"); 
+        break;
+      case "ArrowUp": 
+        e.preventDefault();
+        moveFocus("up"); 
+        break;
+      case "ArrowDown": 
+        e.preventDefault();
+        moveFocus("down"); 
+        break;
+      case "Enter": 
+        e.preventDefault();
+        handleEnter(); 
+        break;
+      case "Escape": 
+        e.preventDefault();
+        handleBack(); 
+        break;
+      case "Backspace": 
+        e.preventDefault();
+        handleBack(); 
+        break;
       case "m":
-      case "M": openMenuWithCurrentSelection(); break;
+      case "M": 
+        e.preventDefault();
+        openMenuWithCurrentSelection(); 
+        break;
     }
   });
 }
@@ -108,4 +147,7 @@ export function initializeMouseEvents() {
 export function initializeEvents() {
   initializeKeyboardEvents();
   initializeMouseEvents();
+  initializeWidgetMessages();
+  
+  console.log("📡 Event handlers initialized with widget communication support");
 }
