@@ -42,7 +42,7 @@ let confirmDialog = null; // exit confirmation dialog state
 function enterSleepMode() {
   isAsleep = true;
   
-  // Create sleep overlay
+  // Create sleep overlay - pure black screen with no content
   const sleepOverlay = document.createElement("div");
   sleepOverlay.id = "sleep-overlay";
   sleepOverlay.style.cssText = `
@@ -53,16 +53,10 @@ function enterSleepMode() {
     height: 100%;
     background: #000;
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    font-size: 24px;
     cursor: pointer;
     transition: opacity 0.5s ease;
   `;
   
-  sleepOverlay.textContent = "💤";
   document.body.appendChild(sleepOverlay);
   
   // Fade in
@@ -124,11 +118,11 @@ function showExitConfirmation() {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   `;
   
-  // Dialog content
+  // Dialog content - both buttons have same gray background
   dialog.innerHTML = `
     <h2 style="margin: 0 0 20px 0; font-size: 24px;">Are you sure you want to exit?</h2>
     <div id="exit-buttons" style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-      <button id="exit-yes" style="padding: 12px 24px; background: #d32f2f; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">Yes</button>
+      <button id="exit-yes" style="padding: 12px 24px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">Yes</button>
       <button id="exit-no" style="padding: 12px 24px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; outline: 3px solid transparent; transition: all 0.2s;">No</button>
     </div>
   `;
