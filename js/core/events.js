@@ -8,17 +8,20 @@ import { moveFocus, handleEnter, handleBack, openMenuWithCurrentSelection, updat
 // ---------------------
 
 export function initializeKeyboardEvents() {
-  document.addEventListener("keydown", e => {
+  document.addEventListener("keydown", async e => {
     // Handle sleep mode - any key wakes up
     if (state.isAsleep) {
       e.preventDefault();
-      import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
-      import('../ui/settings.js').then(({ startResleepTimer }) => startResleepTimer());
+      const { wakeUp } = await import('../ui/modals.js');
+      const { startResleepTimer } = await import('../ui/settings.js');
+      wakeUp();
+      startResleepTimer();
       return;
     }
     
     // Handle settings modal
-    import('../ui/settings.js').then(({ isSettingsOpen, moveSettingsFocus, handleSettingsEnter, closeSettings }) => {
+    try {
+      const { isSettingsOpen, moveSettingsFocus, handleSettingsEnter, closeSettings } = await import('../ui/settings.js');
       if (isSettingsOpen()) {
         e.preventDefault();
         switch (e.key) {
@@ -38,28 +41,29 @@ export function initializeKeyboardEvents() {
         }
         return;
       }
-    });
+    } catch (err) {
+      // Settings module not loaded yet, continue
+    }
     
     // Handle exit confirmation dialog
     if (state.confirmDialog) {
       e.preventDefault();
       
       // Import modal functions
-      import('../ui/modals.js').then(({ moveExitFocus, handleExitChoice }) => {
-        switch (e.key) {
-          case "ArrowLeft":
-          case "ArrowRight":
-            moveExitFocus(e.key === "ArrowLeft" ? "left" : "right");
-            break;
-          case "Enter":
-            handleExitChoice(state.confirmDialog.selectedButton);
-            break;
-          case "Escape":
-          case "Backspace":
-            handleExitChoice("no");
-            break;
-        }
-      });
+      const { moveExitFocus, handleExitChoice } = await import('../ui/modals.js');
+      switch (e.key) {
+        case "ArrowLeft":
+        case "ArrowRight":
+          moveExitFocus(e.key === "ArrowLeft" ? "left" : "right");
+          break;
+        case "Enter":
+          handleExitChoice(state.confirmDialog.selectedButton);
+          break;
+        case "Escape":
+        case "Backspace":
+          handleExitChoice("no");
+          break;
+      }
       return;
     }
     
@@ -67,16 +71,6 @@ export function initializeKeyboardEvents() {
     switch (e.key) {
       case "ArrowLeft": moveFocus("left"); break;
       case "ArrowRight": moveFocus("right"); break;
-      case "ArrowUp": moveFocus("up"); break;
-      case "ArrowDown": moveFocus("down"); break;
-      case "Enter": handleEnter(); break;
-      case "Escape": handleBack(); break;
-      case "Backspace": handleBack(); break;
-      case "m":
-      case "M": openMenuWithCurrentSelection(); break;
-    }
-  });
-}"); break;
       case "ArrowUp": moveFocus("up"); break;
       case "ArrowDown": moveFocus("down"); break;
       case "Enter": handleEnter(); break;
