@@ -8,6 +8,7 @@
   --bg-sleep: #000;
   --bg-button: #666;
   --bg-active: rgba(255, 255, 255, 0.2);
+  --bg-primary-transparent: rgba(34, 34, 34, 0);
   
   /* Text Colors */
   --text-primary: #fff;
