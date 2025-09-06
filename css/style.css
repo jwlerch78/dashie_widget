@@ -38,14 +38,13 @@ html, body {
 
 #sidebar.expanded {
   width: 200px;
+  background: #222; /* solid base */
   background: linear-gradient(
     to right,
-    rgba(34, 34, 34, 0.95) 0%,
-    rgba(34, 34, 34, 0.85) 50%,
-    rgba(34, 34, 34, 0.0) 100%
+    #222 0%,
+    #222 40%,
+    rgba(34, 34, 34, 0) 100%
   );
-  align-items: flex-start;
-  padding-left: 12px;
 }
 
 /* Dashie logo at top - always takes up space */
@@ -114,17 +113,18 @@ html, body {
 
 /* Container for system functions mini-grid */
 .system-functions {
-    display: grid;
-  grid-template-columns: repeat(2, 18px);
-  grid-template-rows: repeat(2, 18px);
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
   margin-top: auto;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+  width: 44px;
+  height: 44px;
 
-  justify-content: center;   /* center horizontally */
-  align-content: center;     /* center vertically in its box */
-  justify-self: center;      /* center the grid inside sidebar */
-  width: 100%;               /* take sidebar width */
+  /* new */
+  margin-left: auto;
+  margin-right: auto;   /* centers the whole block */
 }
 
 /* Expanded state - all items become full width with labels */
