@@ -39,17 +39,32 @@ export function updateFocus() {
 }
 
 // ---------------------
-// NAVIGATION LOGIC
+// WIDGET COMMUNICATION
 // ---------------------
 
 // Send D-pad action to focused widget
 export function sendToWidget(action) {
-  if (!state.selectedCell) return;
+  if (!state.selectedCell) {
+    console.log("No widget selected for command:", action);
+    return;
+  }
+  
   const iframe = state.selectedCell.querySelector("iframe");
   if (iframe && iframe.contentWindow) {
-    iframe.contentWindow.postMessage({ action }, "*");
+    try {
+      iframe.contentWindow.postMessage({ action }, "*");
+      console.log(`✓ Sent command '${action}' to widget iframe`);
+    } catch (error) {
+      console.warn("Failed to send message to widget:", error);
+    }
+  } else {
+    console.log(`No iframe found in selected cell for action: ${action}`);
   }
 }
+
+// ---------------------
+// NAVIGATION LOGIC
+// ---------------------
 
 export function moveFocus(dir) {
   if (state.isAsleep || state.confirmDialog) return; // Don't move focus when asleep or in modal
@@ -136,8 +151,10 @@ export function handleEnter() {
     );
     if (state.selectedCell === el) {
       setSelectedCell(null);
+      console.log("🔓 Widget unfocused - returning to grid navigation");
     } else {
       setSelectedCell(el);
+      console.log("🔒 Widget focused - commands will be forwarded to iframe");
     }
   } else if (state.focus.type === "menu") {
     const menuItems = elements.sidebar.querySelectorAll(".menu-item");
@@ -158,6 +175,7 @@ export function handleEnter() {
       import('../ui/grid.js').then(({ renderGrid, renderSidebar }) => {
         renderGrid();
         renderSidebar();
+        console.log(`📱 Switched main widget to: ${menuKey}`);
       });
     }
   }
@@ -183,7 +201,10 @@ export function handleBack() {
     setFocus({ type: "grid", row: 1, col: 1 });
   } else {
     // If widget is focused, unfocus it
-    setSelectedCell(null);
+    if (state.selectedCell) {
+      setSelectedCell(null);
+      console.log("🔓 Widget unfocused via back button");
+    }
   }
   updateFocus();
 }
