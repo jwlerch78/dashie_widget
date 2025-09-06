@@ -62,6 +62,7 @@ function createFallbackWidget(widget) {
 
 export function renderGrid() {
   elements.grid.innerHTML = "";
+  
   widgets.forEach(w => {
     const div = document.createElement("div");
     div.classList.add("widget");
@@ -70,7 +71,7 @@ export function renderGrid() {
     div.style.gridRow = `${w.row} / span ${w.rowSpan}`;
     div.style.gridColumn = `${w.col} / span ${w.colSpan}`;
 
-    // Add click handler to widget container to close sidebar
+    // ADD: Click handler to widget container to close sidebar
     div.addEventListener("click", (e) => {
       console.log("🖱️ Widget container clicked:", w.id);
       
@@ -79,7 +80,7 @@ export function renderGrid() {
         console.log("✅ Closing sidebar from widget click");
         elements.sidebar.classList.remove("expanded");
         
-        // Return focus to grid if we were in menu
+        // Return focus to this specific widget
         if (state.focus.type === "menu") {
           import('../core/navigation.js').then(({ updateFocus }) => {
             setFocus({ type: "grid", row: w.row, col: w.col });
