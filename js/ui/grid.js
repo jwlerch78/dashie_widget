@@ -151,33 +151,26 @@ export function createMenuItem(item, type, globalIndex) {
   label.textContent = item.label || "";
   div.appendChild(label);
 
-  // Add event listeners
+  // Add ONLY click events - NO HOVER EVENTS AT ALL
   addMenuItemEventListeners(div, type, globalIndex);
 
   return div;
 }
 
 // ---------------------
-// EVENT LISTENERS
+// EVENT LISTENERS (CLICK ONLY)
 // ---------------------
 
 function addMenuItemEventListeners(div, type, globalIndex) {
-  // Mouse / touch events
-  div.addEventListener("mouseover", () => {
-    if (state.confirmDialog || state.isAsleep || state.selectedCell) return; // Don't respond when widget is focused
-    setFocus({ type: "menu", index: globalIndex });
-    elements.sidebar.classList.add("expanded");
-    
-    // Import updateFocus and call it
-    import('../core/navigation.js').then(({ updateFocus }) => updateFocus());
-  });
-
-  div.addEventListener("mouseout", () => {
-    if (state.confirmDialog || state.isAsleep || state.selectedCell) return;
-    if (state.focus.type !== "menu") elements.sidebar.classList.remove("expanded");
-  });
-
+  // ONLY click events - absolutely no hover/mouseover/mouseout
   div.addEventListener("click", () => {
+    console.log("Menu item clicked:", { 
+      item: div.dataset.menu, 
+      isAsleep: state.isAsleep, 
+      confirmDialog: !!state.confirmDialog,
+      selectedCell: !!state.selectedCell 
+    });
+    
     if (state.confirmDialog || state.isAsleep) return;
     
     // Don't allow menu clicks when widget is focused
@@ -186,19 +179,22 @@ function addMenuItemEventListeners(div, type, globalIndex) {
       return;
     }
     
+    // Set focus and expand sidebar
     setFocus({ type: "menu", index: globalIndex });
+    elements.sidebar.classList.add("expanded");
     
-    // Import navigation functions
+    // Import navigation functions and execute
     import('../core/navigation.js').then(({ updateFocus, handleEnter }) => {
-      // For system items, expand the menu first
+      updateFocus();
+      
+      // For system items, show expansion briefly then execute
       if (type === "system") {
-        elements.sidebar.classList.add("expanded");
-        updateFocus();
-        // Small delay to show expansion, then execute
         setTimeout(() => handleEnter(), 150);
       } else {
         handleEnter();
       }
     });
   });
+  
+  // NO mouseover, mouseout, mouseenter, mouseleave events AT ALL
 }
