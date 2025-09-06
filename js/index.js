@@ -153,6 +153,19 @@ function showExitConfirmation() {
   confirmDialog.buttons.yes.addEventListener("click", () => handleExitChoice("yes"));
   confirmDialog.buttons.no.addEventListener("click", () => handleExitChoice("no"));
   
+  // Add hover effects for mouse interaction
+  Object.entries(confirmDialog.buttons).forEach(([key, button]) => {
+    button.addEventListener("mouseenter", () => {
+      confirmDialog.selectedButton = key;
+      updateExitButtonHighlight();
+    });
+    
+    button.addEventListener("mouseleave", () => {
+      // Keep current selection, just update highlight
+      updateExitButtonHighlight();
+    });
+  });
+  
   // Click backdrop to cancel
   backdrop.addEventListener("click", (e) => {
     if (e.target === backdrop) {
