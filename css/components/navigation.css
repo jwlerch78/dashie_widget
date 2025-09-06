@@ -1,1 +1,29 @@
+/* css/components/navigation.css - Focus & Selection States */
 
+/* Widget selection and focus states */
+.widget.selected {
+  outline: 3px solid var(--outline-selected);
+  outline-offset: 3px;
+  box-shadow: var(--glow-selected);
+}
+
+.widget.focused {
+  outline: 5px solid var(--outline-focused);
+  outline-offset: 3px;
+  box-shadow: var(--glow-focused);
+}
+
+/* Menu item selection and focus states */
+.menu-item.active {
+  background-color: var(--bg-active);
+}
+
+.menu-item.selected {
+  outline: 3px solid var(--outline-selected);
+  outline-offset: 2px;
+}
+
+.menu-item.focused {
+  outline: 4px solid var(--outline-focused);
+  outline-offset: 2px;
+}
