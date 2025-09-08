@@ -1,13 +1,41 @@
 /* css/components/widgets.css - Widget Container Styles */
 
-.widget iframe,
 .widget-iframe {
   width: 100%;
   height: 100%;
   border: none;
   background: var(--bg-widget-iframe);
-  pointer-events: auto; /* ADD THIS - Move from JavaScript */
-  border-radius: inherit; /* Inherit from parent widget container */
+  pointer-events: auto;
+}
+
+.widget-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-fallback-widget);
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  text-align: center;
+  padding: var(--padding-widget);
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.fallback-title {
+  font-size: var(--font-size-widget-title);
+  margin-bottom: var(--padding-widget-small);
+}
+
+.fallback-message {
+  font-size: var(--font-size-base);
+}
+
+.fallback-url {
+  font-size: var(--font-size-widget-subtitle);
+  margin-top: var(--padding-widget-small);
+  color: var(--text-muted);
 }
 
 /* Overlay for click interception when sidebar is expanded */
