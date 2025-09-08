@@ -1,0 +1,212 @@
+/* widgets/calendar/calendar.css - Calendar Widget Styles */
+
+:root {
+  /* Calendar Theme Variables */
+  --cal-bg-primary: #333;
+  --cal-bg-secondary: #444;
+  --cal-bg-tertiary: #555;
+  --cal-text-primary: white;
+  --cal-text-secondary: #ccc;
+  --cal-text-muted: #999;
+  --cal-border-radius: 8px;
+  --cal-border-radius-small: 4px;
+  
+  /* Calendar Colors */
+  --cal-navy: #1e3a8a;
+  --cal-green: #166534;
+  --cal-content-bg: white;
+  --cal-content-text: #333;
+  
+  /* Calendar Layout */
+  --cal-header-height: 50px;
+  --cal-padding: 10px;
+  --cal-gap: 10px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--cal-bg-primary);
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--cal-text-primary);
+}
+
+#calendar-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--cal-bg-primary);
+  overflow: hidden;
+}
+
+#calendar {
+  width: calc(100% - calc(var(--cal-padding) * 2));
+  height: calc(100% - var(--cal-header-height) - calc(var(--cal-padding) * 2));
+  background: var(--cal-content-bg);
+  border-radius: var(--cal-border-radius);
+  margin: var(--cal-padding);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.calendar-header {
+  background: var(--cal-bg-secondary);
+  color: var(--cal-text-primary);
+  padding: var(--cal-gap) 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--cal-border-radius) var(--cal-border-radius) 0 0;
+  margin: var(--cal-padding) var(--cal-padding) 0 var(--cal-padding);
+  font-size: 14px;
+  height: calc(var(--cal-header-height) - var(--cal-padding));
+  box-sizing: border-box;
+}
+
+.calendar-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--cal-text-primary);
+}
+
+.calendar-mode {
+  background: var(--cal-bg-tertiary);
+  color: var(--cal-text-primary);
+  padding: 4px 8px;
+  border-radius: var(--cal-border-radius-small);
+  font-size: 12px;
+}
+
+.status {
+  position: absolute;
+  top: var(--cal-padding);
+  right: var(--cal-padding);
+  font-size: 12px;
+  color: var(--cal-text-muted);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 3px 6px;
+  border-radius: var(--cal-border-radius-small);
+  z-index: 1000;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--cal-text-muted);
+  font-size: 14px;
+  z-index: 999;
+}
+
+.controls-info {
+  position: absolute;
+  bottom: var(--cal-padding);
+  left: var(--cal-padding);
+  font-size: 10px;
+  color: var(--cal-text-muted);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 3px 6px;
+  border-radius: var(--cal-border-radius-small);
+  z-index: 1000;
+}
+
+/* Toast UI Calendar Overrides */
+.toastui-calendar {
+  background: var(--cal-content-bg) !important;
+  color: var(--cal-content-text) !important;
+  height: 100% !important;
+}
+
+.toastui-calendar-layout {
+  height: 100% !important;
+}
+
+.toastui-calendar-week-view,
+.toastui-calendar-month-view,
+.toastui-calendar-daily-view {
+  height: 100% !important;
+}
+
+/* Hide title (has calendar icon) */
+.toastui-calendar-layout > .toastui-calendar-week-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
+.toastui-calendar-layout > .toastui-calendar-month-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
+.toastui-calendar-layout > .toastui-calendar-daily-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header {
+  display: none !important;
+}
+
+/* Force hide all-day sections */
+.toastui-calendar-week-view .toastui-calendar-weekday-allday-container,
+.toastui-calendar-week-view .toastui-calendar-allday-container,
+.toastui-calendar-weekly-view .toastui-calendar-weekday-allday-container,
+.toastui-calendar-weekly-view .toastui-calendar-allday-container {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Adjust week view to use full height without all-day section */
+.toastui-calendar-week-view .toastui-calendar-time,
+.toastui-calendar-weekly-view .toastui-calendar-time {
+  height: 100% !important;
+}
+
+/* Ensure monthly view displays properly */
+.toastui-calendar-month-view .toastui-calendar-month-week-item {
+  height: auto !important;
+  min-height: 80px !important;
+}
+
+.toastui-calendar-month-view .toastui-calendar-month-week {
+  flex: 1 !important;
+}
+
+/* Make week/daily view scrollable */
+.toastui-calendar-week-view .toastui-calendar-time,
+.toastui-calendar-daily-view .toastui-calendar-time {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+.toastui-calendar-week-view .toastui-calendar-time-scroll-wrapper,
+.toastui-calendar-daily-view .toastui-calendar-time-scroll-wrapper {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Calendar event styling with theme variables */
+.toastui-calendar-event-time .toastui-calendar-event-title,
+.toastui-calendar-event-allday .toastui-calendar-event-title {
+  color: var(--cal-text-primary) !important;
+  font-weight: 500;
+}
+
+/* Day names styling */
+.toastui-calendar-week-view-day-names,
+.toastui-calendar-month-view-day-names {
+  background: #f8f9fa !important;
+  color: var(--cal-content-text) !important;
+  font-weight: 600;
+}
+
+/* Current time indicator */
+.toastui-calendar-timegrid-current-time {
+  background: #ff4444 !important;
+}
+
+/* Today highlighting */
+.toastui-calendar-weekday.toastui-calendar-today,
+.toastui-calendar-month-date.toastui-calendar-today {
+  background-color: rgba(255, 170, 0, 0.1) !important;
+}
+
+/* Time grid styling */
+.toastui-calendar-time-hour-marker {
+  color: var(--cal-text-muted) !important;
+}
+
+.toastui-calendar-timegrid-timezone {
+  color: var(--cal-content-text) !important;
+}
