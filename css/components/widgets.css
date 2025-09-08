@@ -8,4 +8,5 @@
   border-radius: var(--border-radius);
   font-size: var(--font-size-large);
   color: var(--text-primary);
+  overflow: hidden; /* ADD THIS - Ensures iframe content respects border radius */
 }
