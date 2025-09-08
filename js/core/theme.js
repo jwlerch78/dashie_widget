@@ -18,7 +18,7 @@ export const THEME_CONFIG = {
   [THEMES.LIGHT]: {
     name: 'Light Theme', 
     className: 'theme-light',
-    logoSrc: 'icons/Dashie_Full_Logo_Orange_Transparent.png'
+    logoSrc: 'icons/Dashie_Full_Logo_Black_Transparent.png'
   }
 };
 
