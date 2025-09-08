@@ -1,4 +1,4 @@
-// js/core/theme.js - Complete Theme Management System
+// js/core/theme.js - Complete Theme Management System with Flash Prevention
 
 // ---------------------
 // THEME CONSTANTS
@@ -149,7 +149,29 @@ function preventTransitionsOnLoad() {
   document.body.classList.add('no-transitions');
   setTimeout(() => {
     document.body.classList.remove('no-transitions');
-  }, 100);
+  }, 200); // Increased timeout to ensure theme is fully applied
+}
+
+// NEW: Apply theme immediately to prevent flash
+function applyThemeBeforeLoad() {
+  const savedTheme = loadSavedTheme();
+  currentTheme = savedTheme;
+  
+  // Apply theme class immediately - even before DOM is ready
+  if (document.body) {
+    applyThemeToBody(savedTheme);
+  } else {
+    // If body doesn't exist yet, apply when it does
+    const observer = new MutationObserver((mutations, obs) => {
+      if (document.body) {
+        applyThemeToBody(savedTheme);
+        obs.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { childList: true });
+  }
+  
+  console.log(`🎨 Pre-applied theme: ${savedTheme}`);
 }
 
 // ---------------------
@@ -254,12 +276,12 @@ export function switchTheme(newTheme) {
 export function initializeThemeSystem() {
   console.log('🎨 Initializing theme system...');
   
+  // IMPORTANT: Apply theme before preventing transitions to avoid flash
+  applyThemeBeforeLoad();
   preventTransitionsOnLoad();
   
-  currentTheme = loadSavedTheme();
-  console.log(`📖 Loaded theme: ${currentTheme}`);
-  
-  applyThemeToBody(currentTheme);
+  // Theme is already loaded and applied by applyThemeBeforeLoad()
+  console.log(`📖 Using theme: ${currentTheme}`);
   
   initializeWidgetCommunication();
   
@@ -294,4 +316,14 @@ export function isLightTheme() {
 
 export function getThemeDisplayName(theme = currentTheme) {
   return THEME_CONFIG[theme]?.name || 'Unknown Theme';
+}
+
+// ---------------------
+// EARLY THEME APPLICATION (prevents flash)
+// ---------------------
+
+// Apply theme as early as possible - even before main initialization
+if (typeof window !== 'undefined') {
+  // Run immediately when script loads
+  applyThemeBeforeLoad();
 }
