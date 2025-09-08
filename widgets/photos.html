@@ -8,9 +8,8 @@
   <title>Photos Widget</title>
 </head>
 
-  <style>
-
-    html, body {
+<style>
+html, body {
   height: 100%;
   margin: 0;
   background: #000;
@@ -19,6 +18,7 @@
   display: flex;
   flex-direction: column;
 }
+
 /* Photo container */
 #photo-container {
   width: 100%;      
@@ -40,7 +40,6 @@
   display: block;
   transition: opacity 0.3s ease;
 }
-  
 </style>
   
 <body>
@@ -53,7 +52,7 @@
   <script src="../js/widgets/photos.js"></script>
 
 <script>
-// photo_widget.js - with D-pad navigation support
+// photo_widget.js - with D-pad navigation support and settings integration
 document.addEventListener("DOMContentLoaded", function() {
   // --- Elements ---
   const photoImg = document.getElementById("photoImg");
@@ -61,6 +60,8 @@ document.addEventListener("DOMContentLoaded", function() {
   // --- Photo State ---
   let currentPhotoIndex = 0;
   let shuffledPhotos = [];
+  let autoAdvanceInterval = null;
+  let transitionTime = 15; // Default 15 seconds, can be updated from settings
  
   // --- Photo Functions ---
   function shuffleArray(array) {
@@ -92,12 +93,39 @@ document.addEventListener("DOMContentLoaded", function() {
     showPhoto(currentPhotoIndex - 1);
   }
 
+  function updateTransitionTime(newTime) {
+    if (newTime && newTime >= 5 && newTime <= 120) {
+      transitionTime = newTime;
+      console.log(`📸 Updated transition time to ${transitionTime} seconds`);
+      
+      // Restart auto-advance with new timing
+      if (autoAdvanceInterval) {
+        clearInterval(autoAdvanceInterval);
+        startAutoAdvance();
+      }
+    }
+  }
+
+  function startAutoAdvance() {
+    autoAdvanceInterval = setInterval(nextPhoto, transitionTime * 1000);
+    console.log(`📸 Auto-advance started with ${transitionTime}s interval`);
+  }
+
+  function stopAutoAdvance() {
+    if (autoAdvanceInterval) {
+      clearInterval(autoAdvanceInterval);
+      autoAdvanceInterval = null;
+      console.log('📸 Auto-advance stopped');
+    }
+  }
+
   // Make functions globally available for navigation
   window.photoNextPhoto = nextPhoto;
   window.photoPrevPhoto = prevPhoto;
+  window.photoUpdateTransitionTime = updateTransitionTime;
 
-  // --- D-pad Navigation ---
-  // Listen for commands from parent dashboard
+  // --- Message Handling ---
+  // Listen for commands from parent dashboard and settings updates
   window.addEventListener('message', (event) => {
     if (event.data && event.data.action) {
       const action = event.data.action;
@@ -127,6 +155,13 @@ document.addEventListener("DOMContentLoaded", function() {
           break;
       }
     }
+    
+    // Handle settings updates
+    if (event.data && event.data.type === 'update-settings') {
+      if (event.data.photoTransitionTime) {
+        updateTransitionTime(event.data.photoTransitionTime);
+      }
+    }
   });
 
   // --- Initialize Photos ---
@@ -134,8 +169,8 @@ document.addEventListener("DOMContentLoaded", function() {
     shuffledPhotos = shuffleArray(photos);
     showPhoto(0);
     
-    // Auto-advance every 15 seconds
-    setInterval(nextPhoto, 15000);
+    // Start auto-advance
+    startAutoAdvance();
   }
 
   // Send ready signal to parent dashboard
