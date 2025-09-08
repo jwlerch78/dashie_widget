@@ -153,7 +153,7 @@ function preventTransitionsOnLoad() {
 }
 
 // NEW: Apply theme immediately to prevent flash
-function applyThemeBeforeLoad() {
+export function applyThemeBeforeLoad() {
   const savedTheme = loadSavedTheme();
   currentTheme = savedTheme;
   
