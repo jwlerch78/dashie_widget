@@ -241,7 +241,7 @@ export function handleEnter() {
 }
 
 // Handle Escape/Back key
-export function handleEscape() {
+export function handleBack() {
   if (state.isAsleep || state.confirmDialog) return;
 
   if (state.selectedCell) {
