@@ -342,9 +342,9 @@ function validateInput(e) {
   const max = parseInt(input.max);
   
   if (isNaN(value) || value < min || value > max) {
-    input.style.borderColor = '#ff6b6b';
+    input.classList.add('input-error');
   } else {
-    input.style.borderColor = '';
+    input.classList.remove('input-error');
   }
 }
 
