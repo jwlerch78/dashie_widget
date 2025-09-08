@@ -1,9 +1,10 @@
-// js/main.js - App Initialization & Orchestration
+// js/main.js - App Initialization & Orchestration with Theme Support
 
 import { initializeEvents } from './core/events.js';
 import { updateFocus, initializeHighlightTimeout } from './core/navigation.js';
 import { renderGrid, renderSidebar } from './ui/grid.js';
 import { initializeSleepTimer } from './ui/settings.js';
+import { initializeThemeSystem } from './core/theme.js';
 
 // ---------------------
 // APP INITIALIZATION
@@ -11,6 +12,9 @@ import { initializeSleepTimer } from './ui/settings.js';
 
 function initializeApp() {
   console.log("Initializing Dashie Dashboard...");
+  
+  // Initialize theme system first (before any UI rendering)
+  initializeThemeSystem();
   
   // Set up event listeners
   initializeEvents();
