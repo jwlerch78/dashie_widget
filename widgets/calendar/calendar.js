@@ -79,9 +79,9 @@ class CalendarWidget {
         useCreationPopup: false,
         useDetailPopup: false,
         calendars: this.calendars,
-        // SOLUTION: These options control the 3 all-day sections
-        taskView: false,           // Hides Milestone and Task sections
-        scheduleView: ['time'],    // Only shows time grid, hides 'allday' section
+        // Remove old v1.x options that don't work in v2.x
+        // taskView: false,           // This doesn't exist in v2.x
+        // scheduleView: ['time'],    // This doesn't exist in v2.x
         week: {
           startDayOfWeek: 1,
           dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
