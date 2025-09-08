@@ -18,16 +18,17 @@ export const widgetUrls = {
   map: "widgets/map.html",
   agenda: "widgets/agenda.html",
   photos: "widgets/photos.html",
-  camera: "widgets/camera.html" // for future camera widget
+  camera: "widgets/camera.html", // for future camera widget
+  header: "widgets/family_header.html"
 };
 
 // Widget layout configuration
 export const widgets = [
-  { id: "location", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations", url: widgetUrls.location },
-  { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "⏰ Clock", url: widgetUrls.clock },
-  { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, label: "📅 Calendar", url: widgetUrls.calendar }, 
-  { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, label: "📝 Agenda", url: widgetUrls.agenda },
-  { id: "photos", row: 3, col: 2, rowSpan: 1, colSpan: 1, label: "🖼️ Photos", url: widgetUrls.photos }
+  { id: "header", row: 1, col: 1, rowSpan: 1, colSpan: 1, url: widgetUrls.location },
+  { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, url: widgetUrls.clock },
+  { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, url: widgetUrls.calendar }, 
+  { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, url: widgetUrls.agenda },
+  { id: "photos", row: 3, col: 2, rowSpan: 1, colSpan: 1, url: widgetUrls.photos }
 ];
 
 // Map sidebar keys to main widget content
