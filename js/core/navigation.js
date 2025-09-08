@@ -145,6 +145,8 @@ export function moveFocus(dir) {
     let newRow = row;
     let newCol = col;
 
+    console.log(`BEFORE: ${dir} navigation from (${row},${col})`);
+
     if (dir === "left") {
       if (col === 1) {
         // Leaving grid → go to sidebar
@@ -181,11 +183,14 @@ export function moveFocus(dir) {
       if (newRow > 3) newRow = 3; // Clamp to valid range
     }
 
-    // Debug logging for edge cases
-    console.log(`Navigation: ${dir} from (${row},${col}) to (${newRow},${newCol})`);
+    console.log(`AFTER: ${dir} navigation to (${newRow},${newCol})`);
 
-    // Always update focus even if position didn't change - this maintains highlighting
+    // Always update focus to maintain highlighting
     setFocus({ type: "grid", row: newRow, col: newCol });
+    
+    // ALWAYS call updateFocus to ensure highlighting is maintained
+    updateFocus();
+    return; // Make sure we don't call updateFocus again at the end
   }
 
   if (state.focus.type === "menu") {
@@ -234,15 +239,26 @@ export function handleEnter() {
   if (state.isAsleep || state.confirmDialog) return;
 
   if (state.focus.type === "grid") {
-    const widget = findWidget(state.focus.row, state.focus.col);
-    console.log(`Enter pressed on grid position (${state.focus.row},${state.focus.col}), found widget:`, widget);
+    // findWidget returns the widget config object, we need the actual DOM element
+    const widgetConfig = findWidget(state.focus.row, state.focus.col);
+    console.log(`Enter pressed on grid position (${state.focus.row},${state.focus.col}), found widget config:`, widgetConfig);
     
-    if (widget && widget.classList) {
-      setSelectedCell(widget);
-      console.log(`Selected widget:`, widget);
-      updateFocus();
+    if (widgetConfig) {
+      // Find the actual DOM element using the grid position
+      const widgetElement = document.querySelector(
+        `.widget[data-row="${state.focus.row}"][data-col="${state.focus.col}"]`
+      );
+      console.log(`Found widget DOM element:`, widgetElement);
+      
+      if (widgetElement && widgetElement.classList) {
+        setSelectedCell(widgetElement);
+        console.log(`Selected widget element:`, widgetElement);
+        updateFocus();
+      } else {
+        console.warn(`No valid widget DOM element found at position (${state.focus.row},${state.focus.col})`);
+      }
     } else {
-      console.warn(`No valid widget found at position (${state.focus.row},${state.focus.col})`);
+      console.warn(`No widget config found at position (${state.focus.row},${state.focus.col})`);
     }
   }
 
