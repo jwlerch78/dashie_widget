@@ -500,6 +500,3 @@ export function handleSettingsEnter() {
 export function isSettingsOpen() {
   return settingsModal !== null;
 }
-
-// Export settings for other modules
-export { settings };
