@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendar Widget</title>
   
+  <!-- Apply theme immediately to prevent flash -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('dashie-theme') || 'dark';
+        document.documentElement.className = `theme-${savedTheme}`;
+        if (document.body) {
+          document.body.className = `theme-${savedTheme}`;
+        } else {
+          document.addEventListener('DOMContentLoaded', function() {
+            document.body.className = `theme-${savedTheme}`;
+          });
+        }
+      } catch (e) {
+        document.documentElement.className = 'theme-dark';
+        if (document.body) document.body.className = 'theme-dark';
+      }
+    })();
+  </script>
+  
   <!-- Import theme variables from parent -->
   <link rel="stylesheet" href="../css/core/variables.css">
   
@@ -37,34 +57,45 @@
   <script src="calendar/calendar.js"></script>
   
   <script>
+    // Enhanced theme management
+    function applyTheme(theme) {
+      const themeClass = `theme-${theme}`;
+      
+      // Remove existing theme classes
+      document.documentElement.classList.remove('theme-dark', 'theme-light');
+      document.body.classList.remove('theme-dark', 'theme-light');
+      
+      // Add new theme class
+      document.documentElement.classList.add(themeClass);
+      document.body.classList.add(themeClass);
+      
+      console.log(`📅 Calendar widget applied ${theme} theme`);
+    }
+
     // Listen for theme changes from parent
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'theme-change') {
         const newTheme = event.data.theme;
-        const themeClass = `theme-${newTheme}`;
-        
-        // Remove existing theme classes
-        document.body.classList.remove('theme-dark', 'theme-light');
-        
-        // Add new theme class
-        document.body.classList.add(themeClass);
-        
-        console.log(`📅 Calendar widget switched to ${newTheme} theme`);
+        applyTheme(newTheme);
       }
     });
 
-    // Request current theme from parent on load
+    // Request current theme from parent and send ready signal
     window.addEventListener('load', () => {
       if (window.parent !== window) {
+        // Request theme first
         window.parent.postMessage({ 
           type: 'widget-request-theme',
           widget: 'calendar' 
         }, '*');
         
-        window.parent.postMessage({ 
-          type: 'widget-ready', 
-          widget: 'calendar' 
-        }, '*');
+        // Then signal ready
+        setTimeout(() => {
+          window.parent.postMessage({ 
+            type: 'widget-ready', 
+            widget: 'calendar' 
+          }, '*');
+        }, 100);
       }
     });
   </script>
