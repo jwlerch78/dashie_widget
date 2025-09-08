@@ -4,8 +4,17 @@
   width: 100%;
   height: 100%;
   border: none;
-  background: var(--bg-widget-iframe);
   pointer-events: auto;
+
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-large);
+  color: var(--text-primary);
+  overflow: hidden; /* ADD THIS - Ensures iframe content respects border radius */
+  
 }
 
 .widget-fallback {
