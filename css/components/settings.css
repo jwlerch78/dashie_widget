@@ -1,4 +1,4 @@
-/* css/components/settings.css - Settings Modal Interface */
+/* css/components/settings.css - Settings Modal Interface with Theme Support */
 
 /* Settings Modal */
 .settings-modal {
@@ -63,21 +63,21 @@
 
 .settings-content {
   flex: 1;
-  padding: 20px 30px; /* Reduced from 30px */
+  padding: 20px 30px;
   overflow-y: auto;
 }
 
 /* Settings Sections */
 .settings-section {
-  margin-bottom: 25px; /* Reduced from 40px */
+  margin-bottom: 25px;
 }
 
 .settings-section h3.section-header {
   color: var(--text-primary);
   font-size: var(--font-size-large);
-  margin: 0 0 15px 0; /* Reduced bottom margin from 20px */
+  margin: 0 0 15px 0;
   border-bottom: 1px solid var(--text-muted);
-  padding-bottom: 8px; /* Reduced from 10px */
+  padding-bottom: 8px;
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -105,7 +105,7 @@
 }
 
 .section-content {
-  padding-left: 24px; /* Indent content under headers */
+  padding-left: 24px;
 }
 
 /* Settings Form Controls */
@@ -113,13 +113,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 15px; /* Reduced from 20px */
-  padding: 10px 0; /* Reduced from 15px */
+  margin-bottom: 15px;
+  padding: 10px 0;
 }
 
 .settings-row.compact {
-  margin-bottom: 10px; /* Even tighter for compact rows */
-  padding: 6px 0; /* Reduced padding for compact rows */
+  margin-bottom: 10px;
+  padding: 6px 0;
 }
 
 .settings-label {
@@ -215,9 +215,10 @@
   box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3) !important;
 }
 
-/* URL Select Dropdown */
+/* URL Select, Album Select & Theme Select Dropdowns */
 .url-select,
-.album-select {
+.album-select,
+.theme-select {
   background: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--text-muted);
@@ -230,14 +231,16 @@
 }
 
 .url-select:focus,
-.album-select:focus {
+.album-select:focus,
+.theme-select:focus {
   outline: none;
   border-color: var(--outline-focused);
   box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
 }
 
 .url-select.selected,
-.album-select.selected {
+.album-select.selected,
+.theme-select.selected {
   border-color: var(--outline-selected);
   box-shadow: 0 0 0 2px rgba(255, 170, 0, 0.3);
 }
