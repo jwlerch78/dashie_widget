@@ -9,6 +9,8 @@
   --bg-button: #666;
   --bg-active: rgba(255, 255, 255, 0.2);
   --bg-primary-transparent: rgba(34, 34, 34, 0);
+  --bg-primary-semi-transparent: rgba(34, 34, 34, 0.8);
+
   
   /* Text Colors */
   --text-primary: #fff;
