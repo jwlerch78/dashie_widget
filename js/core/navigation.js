@@ -337,23 +337,23 @@ function handleMenuSelection(optionId) {
       window.location.reload();
       break;
     case "sleep":
-      // Import and trigger sleep mode
-      import('../ui/modals.js').then(({ goToSleep }) => {
-        goToSleep();
+      // Import and trigger sleep mode - use correct function name
+      import('../ui/modals.js').then(({ enterSleepMode }) => {
+        enterSleepMode();
       }).catch(() => {
         console.log("Sleep function not available");
       });
       break;
     case "settings":
-      // Import and open settings
-      import('../ui/settings.js').then(({ openSettings }) => {
-        openSettings();
+      // Import and open settings - use correct function name
+      import('../ui/settings.js').then(({ showSettings }) => {
+        showSettings();
       }).catch(() => {
         console.log("Settings function not available");
       });
       break;
     case "exit":
-      // Import and show exit confirmation
+      // Import and show exit confirmation - use correct function name
       import('../ui/modals.js').then(({ showExitConfirmation }) => {
         showExitConfirmation();
       }).catch(() => {
