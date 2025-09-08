@@ -250,6 +250,36 @@ html, body {
   background: #ff4444 !important;
 }
 
+/* Current time indicator styling fixes */
+.toastui-calendar-current-time {
+  background: var(--accent-orange, #ffaa00) !important;
+  color: var(--text-primary, #fff) !important;
+  border-radius: 3px !important;
+  padding: 2px 4px !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Current time marker line */
+.toastui-calendar-timegrid-current-time-marker {
+  background: var(--accent-orange, #ffaa00) !important;
+  height: 2px !important;
+}
+
+/* Current time text box */
+.toastui-calendar-current-time-text,
+.toastui-calendar-timegrid-current-time-text {
+  background: var(--accent-orange, #ffaa00) !important;
+  color: var(--text-primary, #fff) !important;
+  border: none !important;
+  border-radius: 3px !important;
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
 /* Scrollable areas - ensure proper height */
 .toastui-calendar-week-view .toastui-calendar-time-scroll-wrapper,
 .toastui-calendar-daily-view .toastui-calendar-time-scroll-wrapper {
