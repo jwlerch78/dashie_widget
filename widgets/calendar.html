@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendar Widget</title>
   
+  <!-- Import theme variables from parent -->
+  <link rel="stylesheet" href="../css/core/variables.css">
+  
   <!-- Toast UI Calendar CSS -->
   <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
   
   <!-- Calendar Widget Styles -->
   <link rel="stylesheet" href="calendar/calendar.css">
 </head>
-<body>  
+<body class="theme-dark">
   <div id="calendar-container">
     <div class="loading" id="loading">Loading calendar...</div>
     
@@ -32,5 +35,38 @@
   
   <!-- Calendar Widget Logic -->
   <script src="calendar/calendar.js"></script>
+  
+  <script>
+    // Listen for theme changes from parent
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'theme-change') {
+        const newTheme = event.data.theme;
+        const themeClass = `theme-${newTheme}`;
+        
+        // Remove existing theme classes
+        document.body.classList.remove('theme-dark', 'theme-light');
+        
+        // Add new theme class
+        document.body.classList.add(themeClass);
+        
+        console.log(`📅 Calendar widget switched to ${newTheme} theme`);
+      }
+    });
+
+    // Request current theme from parent on load
+    window.addEventListener('load', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ 
+          type: 'widget-request-theme',
+          widget: 'calendar' 
+        }, '*');
+        
+        window.parent.postMessage({ 
+          type: 'widget-ready', 
+          widget: 'calendar' 
+        }, '*');
+      }
+    });
+  </script>
 </body>
 </html>
