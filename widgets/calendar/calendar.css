@@ -1,85 +1,284 @@
-// Future enhancement for calendar color settings
-// Add this to your settings.js when ready for calendar color configuration
+/* widgets/calendar/calendar.css - Calendar Widget Styles with proper theme inheritance and height */
 
-// Example calendar color configuration that could be added to settings
-export const calendarColorSettings = {
-  // Predefined color palettes
-  colorPalettes: {
-    material: [
-      { name: 'Blue', bg: '#1976d2', text: '#ffffff' },
-      { name: 'Green', bg: '#388e3c', text: '#ffffff' },
-      { name: 'Red', bg: '#d32f2f', text: '#ffffff' },
-      { name: 'Purple', bg: '#7b1fa2', text: '#ffffff' },
-      { name: 'Orange', bg: '#f57c00', text: '#ffffff' },
-      { name: 'Teal', bg: '#00796b', text: '#ffffff' }
-    ],
-    vibrant: [
-      { name: 'Electric Blue', bg: '#2196f3', text: '#ffffff' },
-      { name: 'Lime Green', bg: '#8bc34a', text: '#000000' },
-      { name: 'Hot Pink', bg: '#e91e63', text: '#ffffff' },
-      { name: 'Deep Orange', bg: '#ff5722', text: '#ffffff' },
-      { name: 'Cyan', bg: '#00bcd4', text: '#000000' },
-      { name: 'Amber', bg: '#ffc107', text: '#000000' }
-    ]
-  },
-  
-  // Default calendar assignments
-  defaultCalendarColors: {
-    calendar1: { bg: '#1976d2', text: '#ffffff', name: 'Blue' },
-    calendar2: { bg: '#388e3c', text: '#ffffff', name: 'Green' }
-  }
-};
-
-// Function to apply calendar colors from settings
-export function applyCalendarColors(calendarWidget, colorSettings) {
-  // Update calendar configuration with user-selected colors
-  calendarWidget.calendars.forEach(cal => {
-    const colorConfig = colorSettings[cal.id];
-    if (colorConfig) {
-      cal.backgroundColor = colorConfig.bg;
-      cal.borderColor = colorConfig.bg;
-      cal.color = colorConfig.text;
-    }
-  });
-  
-  // Refresh calendar display
-  if (calendarWidget.calendar) {
-    calendarWidget.calendar.clear();
-    calendarWidget.loadCalendarData();
-  }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary, #222);
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text-primary, #fff);
+  box-sizing: border-box;
 }
 
-// Settings UI component for calendar colors (future enhancement)
-function createCalendarColorSettings() {
-  return `
-    <div class="settings-section">
-      <h3 class="section-header" data-section="calendar-colors">
-        <span id="calendar-colors-arrow">▶</span> Calendar Colors
-      </h3>
-      <div id="calendar-colors-content" class="section-content" style="display: none;">
-        <div class="settings-row compact">
-          <div class="settings-label">Main Calendar Color:</div>
-          <div class="settings-control">
-            <select class="color-select" id="calendar1-color">
-              <option value="blue" selected>Blue</option>
-              <option value="green">Green</option>
-              <option value="red">Red</option>
-              <option value="purple">Purple</option>
-            </select>
-          </div>
-        </div>
-        <div class="settings-row compact">
-          <div class="settings-label">Secondary Calendar Color:</div>
-          <div class="settings-control">
-            <select class="color-select" id="calendar2-color">
-              <option value="blue">Blue</option>
-              <option value="green" selected>Green</option>
-              <option value="red">Red</option>
-              <option value="purple">Purple</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+#calendar-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: var(--bg-primary, #222);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.calendar-header {
+  background: var(--bg-tertiary, #444) !important;
+  color: var(--text-primary, #fff) !important;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  height: 36px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--text-muted, #999);
+  flex-shrink: 0;
+}
+
+.calendar-title {
+  font-weight: bold;
+  font-size: 15px;
+  color: var(--text-primary, #fff) !important;
+}
+
+.calendar-mode {
+  background: var(--bg-button, #666) !important;
+  color: var(--text-primary, #fff) !important;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+#calendar {
+  flex: 1;
+  background: var(--bg-secondary, #333);
+  overflow: hidden;
+  position: relative;
+  min-height: 0; /* Important for flex child */
+}
+
+.status {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 10px;
+  color: var(--text-muted, #999);
+  background: var(--bg-secondary, #333);
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 1000;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-muted, #999);
+  font-size: 14px;
+  z-index: 999;
+}
+
+.controls-info {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 9px;
+  color: var(--text-muted, #999);
+  background: var(--bg-secondary, #333);
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 1000;
+}
+
+/* ===== TOAST UI CALENDAR THEME OVERRIDES ===== */
+
+/* Main calendar container - force theme colors and full height */
+.toastui-calendar {
+  background: var(--bg-secondary, #333) !important;
+  color: var(--text-primary, #fff) !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Calendar layout and panels - ensure full height */
+.toastui-calendar-layout {
+  height: 100% !important;
+  background: var(--bg-secondary, #333) !important;
+}
+
+.toastui-calendar-panel {
+  background: var(--bg-secondary, #333) !important;
+}
+
+/* View containers - ensure full height */
+.toastui-calendar-week-view,
+.toastui-calendar-month-view,
+.toastui-calendar-daily-view {
+  height: 100% !important;
+  background: var(--bg-secondary, #333) !important;
+}
+
+.toastui-calendar-week-view-layout,
+.toastui-calendar-month-view-layout,
+.toastui-calendar-daily-view-layout {
+  height: 100% !important;
+}
+
+/* Hide title headers that we don't need */
+.toastui-calendar-layout > .toastui-calendar-week-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
+.toastui-calendar-layout > .toastui-calendar-month-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
+.toastui-calendar-layout > .toastui-calendar-daily-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header {
+  display: none !important;
+}
+
+/* Force hide all-day sections */
+.toastui-calendar-week-view .toastui-calendar-weekday-allday-container,
+.toastui-calendar-week-view .toastui-calendar-allday-container,
+.toastui-calendar-weekly-view .toastui-calendar-weekday-allday-container,
+.toastui-calendar-weekly-view .toastui-calendar-allday-container {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Time view adjustments - ensure full height */
+.toastui-calendar-week-view .toastui-calendar-time,
+.toastui-calendar-weekly-view .toastui-calendar-time,
+.toastui-calendar-daily-view .toastui-calendar-time {
+  height: 100% !important;
+  background: var(--bg-secondary, #333) !important;
+}
+
+/* Day names with theme colors */
+.toastui-calendar-week-view-day-names,
+.toastui-calendar-month-view-day-names {
+  background: var(--bg-tertiary, #444) !important;
+}
+
+.toastui-calendar-week-view-day-names .toastui-calendar-day-name,
+.toastui-calendar-month-view-day-names .toastui-calendar-day-name {
+  color: var(--text-primary, #fff) !important;
+  background: var(--bg-tertiary, #444) !important;
+  font-weight: 600;
+}
+
+/* Time column styling */
+.toastui-calendar-time-hour,
+.toastui-calendar-time-hour-marker {
+  background: var(--bg-primary, #222) !important;
+  color: var(--text-primary, #fff) !important;
+}
+
+.toastui-calendar-time-hour-marker {
+  color: var(--text-muted, #999) !important;
+}
+
+/* Main content areas */
+.toastui-calendar-time-date,
+.toastui-calendar-time-date-wrapper {
+  background: var(--bg-secondary, #333) !important;
+  color: var(--text-primary, #fff) !important;
+}
+
+/* Grid lines and borders */
+.toastui-calendar-weekday,
+.toastui-calendar-month-date {
+  border-color: var(--text-muted, #999) !important;
+  background: var(--bg-secondary, #333) !important;
+}
+
+/* Today highlighting */
+.toastui-calendar-weekday.toastui-calendar-today,
+.toastui-calendar-month-date.toastui-calendar-today {
+  background-color: rgba(255, 170, 0, 0.1) !important;
+}
+
+/* ===== EVENT STYLING - PRESERVE CUSTOM COLORS ===== */
+
+/* IMPORTANT: Don't override event colors - let calendar.js colors show through */
+.toastui-calendar-event-time,
+.toastui-calendar-event-allday {
+  /* Remove any background/color overrides to preserve calendar.js colors */
+}
+
+.toastui-calendar-event-time .toastui-calendar-event-title,
+.toastui-calendar-event-allday .toastui-calendar-event-title {
+  /* Don't force color - let the event's own color show */
+  font-weight: 500;
+}
+
+/* Current time indicator */
+.toastui-calendar-timegrid-current-time {
+  background: #ff4444 !important;
+}
+
+/* Scrollable areas - ensure proper height */
+.toastui-calendar-week-view .toastui-calendar-time-scroll-wrapper,
+.toastui-calendar-daily-view .toastui-calendar-time-scroll-wrapper {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Month view specific - ensure proper height */
+.toastui-calendar-month-view .toastui-calendar-month-week-item {
+  height: auto !important;
+  min-height: 80px !important;
+  background: var(--bg-secondary, #333) !important;
+}
+
+.toastui-calendar-month-view .toastui-calendar-month-week {
+  flex: 1 !important;
+}
+
+.toastui-calendar-month-view .toastui-calendar-month-content {
+  height: 100% !important;
+}
+
+/* Month date numbers */
+.toastui-calendar-month-date .toastui-calendar-month-date-number {
+  color: var(--text-primary, #fff) !important;
+}
+
+/* Timezone display */
+.toastui-calendar-timegrid-timezone {
+  color: var(--text-primary, #fff) !important;
+  background: var(--bg-primary, #222) !important;
+}
+
+/* Text elements that should use theme colors (but not events) */
+.toastui-calendar-layout > * > * > * {
+  color: var(--text-primary, #fff);
+}
+
+/* Override only for non-event text elements */
+.toastui-calendar-time-hour,
+.toastui-calendar-day-name,
+.toastui-calendar-month-date-number,
+.toastui-calendar-time-hour-marker {
+  color: var(--text-primary, #fff) !important;
+}
+
+/* ===== THEME-SPECIFIC OVERRIDES ===== */
+
+/* Dark theme (default) */
+body.theme-dark {
+  --bg-primary: #222;
+  --bg-secondary: #333;
+  --bg-tertiary: #444;
+  --bg-button: #666;
+  --text-primary: #fff;
+  --text-muted: #999;
+}
+
+/* Light theme */
+body.theme-light {
+  --bg-primary: #FCFCFF;
+  --bg-secondary: #FCFCFF;
+  --bg-tertiary: #eeeeee;
+  --bg-button: #90a4ae;
+  --text-primary: #424242;
+  --text-muted: #9e9e9e;
 }
