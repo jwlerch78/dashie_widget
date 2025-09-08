@@ -1,7 +1,7 @@
 // js/main.js - App Initialization & Orchestration
 
 import { initializeEvents } from './core/events.js';
-import { updateFocus } from './core/navigation.js';
+import { updateFocus, initializeHighlightTimeout } from './core/navigation.js';
 import { renderGrid, renderSidebar } from './ui/grid.js';
 import { initializeSleepTimer } from './ui/settings.js';
 
@@ -17,6 +17,9 @@ function initializeApp() {
   
   // Initialize sleep timer system
   initializeSleepTimer();
+  
+  // Initialize navigation highlight timeout system
+  initializeHighlightTimeout();
   
   // Render initial UI
   renderSidebar();
