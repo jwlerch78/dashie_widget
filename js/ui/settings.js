@@ -19,7 +19,7 @@ let settingsFocus = { type: 'close', index: 0 };
 let sleepTimer = null;
 let resleepTimer = null;
 let checkInterval = null;
-let expandedSections = new Set(['sleep']); // Track which sections are expanded
+let expandedSections = new Set(); // Track which sections are expanded - start all collapsed
 
 // ---------------------
 // SETTINGS PERSISTENCE
@@ -181,9 +181,9 @@ export function showSettings() {
         <!-- Sleep Section -->
         <div class="settings-section">
           <h3 class="section-header" data-section="sleep">
-            <span id="sleep-arrow">▼</span> Sleep
+            <span id="sleep-arrow">▶</span> Sleep
           </h3>
-          <div id="sleep-content" class="section-content">
+          <div id="sleep-content" class="section-content" style="display: none;">
             <div class="settings-row compact">
               <div class="settings-label">Sleep Time:</div>
               <div class="settings-control">
@@ -445,8 +445,25 @@ export function updateSettingsFocus() {
   settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button, .section-header, .url-select, .album-select')
     .forEach(el => el.classList.remove('selected'));
   
-  // Apply current focus
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
+  
   if (focusable[settingsFocus.index]) {
     focusable[settingsFocus.index].classList.add('selected');
   }
@@ -455,48 +472,23 @@ export function updateSettingsFocus() {
 export function moveSettingsFocus(direction) {
   if (!settingsModal) return;
   
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
   
-  if (direction === 'up' && settingsFocus.index > 0) {
-    settingsFocus.index--;
-  } else if (direction === 'down' && settingsFocus.index < focusable.length - 1) {
-    settingsFocus.index++;
-  } else if (direction === 'left' && settingsFocus.index > 0) {
-    settingsFocus.index--;
-  } else if (direction === 'right' && settingsFocus.index < focusable.length - 1) {
-    settingsFocus.index++;
-  }
-  
-  updateSettingsFocus();
-}
-
-export function handleSettingsEnter() {
-  if (!settingsModal) return;
-  
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
-  const focused = focusable[settingsFocus.index];
-  
-  if (focused) {
-    if (focused.classList.contains('section-header')) {
-      const sectionId = focused.dataset.section;
-      toggleSection(sectionId);
-    } else if (focused.classList.contains('time-period')) {
-      focused.click();
-    } else if (focused.classList.contains('settings-button') || focused.classList.contains('settings-close')) {
-      focused.click();
-    } else if (focused.classList.contains('time-input') || focused.classList.contains('number-input')) {
-      focused.focus();
-      focused.select();
-    } else if (focused.classList.contains('url-select') || focused.classList.contains('album-select')) {
-      focused.focus();
-    }
-  }
-}
-
-// ---------------------
-// PUBLIC API
-// ---------------------
-
-export function isSettingsOpen() {
-  return settingsModal !== null;
-}
+  if (direction === 'up' && settingsFocus
