@@ -100,6 +100,14 @@ export function sendToWidget(action) {
     return;
   }
   
+  // Add safety checks for selectedCell
+  if (typeof state.selectedCell.querySelector !== 'function') {
+    console.error("selectedCell is not a DOM element:", state.selectedCell);
+    // Clear the invalid selectedCell
+    setSelectedCell(null);
+    return;
+  }
+  
   const iframe = state.selectedCell.querySelector("iframe");
   if (iframe && iframe.contentWindow) {
     try {
@@ -154,31 +162,30 @@ export function moveFocus(dir) {
         updateFocus(); // Call updateFocus here to apply the changes
         return;
       }
-      newCol = Math.max(1, col - 1);
+      newCol = col - 1;
+      if (newCol < 1) newCol = 1; // Clamp to valid range
     }
 
     if (dir === "right") {
-      newCol = Math.min(2, col + 1);
-      // Don't return if hitting edge - stay on current position
-      if (newCol === col) return;
+      newCol = col + 1;
+      if (newCol > 2) newCol = 2; // Clamp to valid range
     }
 
     if (dir === "up") {
-      newRow = Math.max(1, row - 1);
-      // Don't return if hitting edge - stay on current position
-      if (newRow === row) return;
+      newRow = row - 1;
+      if (newRow < 1) newRow = 1; // Clamp to valid range
     }
 
     if (dir === "down") {
-      newRow = Math.min(3, row + 1);
-      // Don't return if hitting edge - stay on current position
-      if (newRow === row) return;
+      newRow = row + 1;
+      if (newRow > 3) newRow = 3; // Clamp to valid range
     }
 
-    // Only update focus if we have a valid position that changed
-    if (newRow !== row || newCol !== col) {
-      setFocus({ type: "grid", row: newRow, col: newCol });
-    }
+    // Debug logging for edge cases
+    console.log(`Navigation: ${dir} from (${row},${col}) to (${newRow},${newCol})`);
+
+    // Always update focus even if position didn't change - this maintains highlighting
+    setFocus({ type: "grid", row: newRow, col: newCol });
   }
 
   if (state.focus.type === "menu") {
@@ -228,9 +235,14 @@ export function handleEnter() {
 
   if (state.focus.type === "grid") {
     const widget = findWidget(state.focus.row, state.focus.col);
-    if (widget) {
+    console.log(`Enter pressed on grid position (${state.focus.row},${state.focus.col}), found widget:`, widget);
+    
+    if (widget && widget.classList) {
       setSelectedCell(widget);
+      console.log(`Selected widget:`, widget);
       updateFocus();
+    } else {
+      console.warn(`No valid widget found at position (${state.focus.row},${state.focus.col})`);
     }
   }
 
