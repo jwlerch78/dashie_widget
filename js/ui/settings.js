@@ -51,7 +51,10 @@ function saveSettings() {
   }
 }
 
-// [Keep all existing time utility functions unchanged]
+// ---------------------
+// TIME UTILITIES
+// ---------------------
+
 function formatTime(hour, minute) {
   const period = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -93,7 +96,10 @@ function isTimeInSleepPeriod() {
   }
 }
 
-// [Keep all existing sleep timer functions unchanged]
+// ---------------------
+// SLEEP TIMER LOGIC
+// ---------------------
+
 export function initializeSleepTimer() {
   loadSettings();
   
@@ -130,7 +136,10 @@ export function cancelResleepTimer() {
   }
 }
 
-// [Keep all existing section management functions unchanged]
+// ---------------------
+// SECTION MANAGEMENT
+// ---------------------
+
 function toggleSection(sectionId) {
   if (expandedSections.has(sectionId)) {
     expandedSections.delete(sectionId);
@@ -158,7 +167,7 @@ function updateSectionVisibility() {
 }
 
 // ---------------------
-// SETTINGS MODAL - UPDATED WITH THEME SECTION
+// SETTINGS MODAL
 // ---------------------
 
 export function showSettings() {
@@ -222,4 +231,367 @@ export function showSettings() {
               <div class="settings-control">
                 <input type="number" class="time-input" id="wake-hour" min="1" max="12" value="${settings.wakeTime.hour > 12 ? settings.wakeTime.hour - 12 : settings.wakeTime.hour === 0 ? 12 : settings.wakeTime.hour}">
                 <span class="time-separator">:</span>
-                <input type="number" class="time-input" id="wake-minute" min="0" max="59" value="${settings.wakeTime.minute.toString().
+                <input type="number" class="time-input" id="wake-minute" min="0" max="59" value="${settings.wakeTime.minute.toString().padStart(2, '0')}">
+                <button class="time-period" id="wake-period">${settings.wakeTime.hour >= 12 ? 'PM' : 'AM'}</button>
+              </div>
+            </div>
+            
+            <div class="settings-row compact">
+              <div class="settings-label">Re-sleep Delay (minutes):</div>
+              <div class="settings-control">
+                <input type="number" class="number-input" id="resleep-delay" min="1" max="120" value="${settings.resleepDelay}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testing Section -->
+        <div class="settings-section">
+          <h3 class="section-header" data-section="testing">
+            <span id="testing-arrow">▶</span> Testing
+          </h3>
+          <div id="testing-content" class="section-content" style="display: none;">
+            <div class="settings-row compact">
+              <div class="settings-label">Redirect URL:</div>
+              <div class="settings-control">
+                <select class="url-select" id="redirect-url">
+                  <option value="https://jwlerch78.github.io/dashie/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie/' ? 'selected' : ''}>Main (dashie)</option>
+                  <option value="https://jwlerch78.github.io/dashie_staging/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie_staging/' ? 'selected' : ''}>Staging</option>
+                  <option value="https://jwlerch78.github.io/dashie_widget/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie_widget/' ? 'selected' : ''}>Widget Test</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-row compact">
+              <div class="settings-label"></div>
+              <div class="settings-control">
+                <button class="settings-button" id="redirect-button">Redirect Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photo Widgets Section -->
+        <div class="settings-section">
+          <h3 class="section-header" data-section="photos">
+            <span id="photos-arrow">▶</span> Photo Widgets
+          </h3>
+          <div id="photos-content" class="section-content" style="display: none;">
+            <div class="settings-row compact">
+              <div class="settings-label">Select Album:</div>
+              <div class="settings-control">
+                <select class="album-select" id="photo-album" disabled>
+                  <option>Family Photos (Coming Soon)</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-row compact">
+              <div class="settings-label">Transition Time (seconds):</div>
+              <div class="settings-control">
+                <input type="number" class="number-input" id="photo-transition" min="5" max="120" value="${settings.photoTransitionTime}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="settings-footer">
+        <button class="settings-button" id="settings-cancel">Cancel</button>
+        <button class="settings-button primary" id="settings-save">Save</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  settingsModal = modal;
+  
+  // Set initial focus
+  settingsFocus = { type: 'close', index: 0 };
+  updateSettingsFocus();
+  
+  // Update section visibility
+  updateSectionVisibility();
+  
+  // Add event listeners
+  addSettingsEventListeners();
+  
+  // Click backdrop to close
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeSettings();
+    }
+  });
+}
+
+function addSettingsEventListeners() {
+  const modal = settingsModal;
+  
+  // Close button
+  modal.querySelector('#settings-close').addEventListener('click', closeSettings);
+  modal.querySelector('#settings-cancel').addEventListener('click', closeSettings);
+  
+  // Save button
+  modal.querySelector('#settings-save').addEventListener('click', saveSettingsAndClose);
+  
+  // AM/PM toggles
+  modal.querySelector('#sleep-period').addEventListener('click', () => togglePeriod('sleep-period'));
+  modal.querySelector('#wake-period').addEventListener('click', () => togglePeriod('wake-period'));
+  
+  // Theme selection - immediate preview
+  modal.querySelector('#theme-select').addEventListener('change', (e) => {
+    const newTheme = e.target.value;
+    console.log(`🎨 Theme selection changed to: ${newTheme}`);
+    // Apply theme immediately for preview
+    switchTheme(newTheme);
+  });
+  
+  // Section headers for collapsing
+  modal.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      const sectionId = e.target.closest('.section-header').dataset.section;
+      toggleSection(sectionId);
+    });
+  });
+  
+  // Redirect button
+  modal.querySelector('#redirect-button').addEventListener('click', () => {
+    const selectedUrl = modal.querySelector('#redirect-url').value;
+    if (selectedUrl && selectedUrl !== window.location.href) {
+      settings.redirectUrl = selectedUrl;
+      saveSettings();
+      window.location.href = selectedUrl;
+    }
+  });
+  
+  // Input validation
+  const inputs = modal.querySelectorAll('.time-input, .number-input');
+  inputs.forEach(input => {
+    input.addEventListener('blur', validateInput);
+    input.addEventListener('input', validateInput);
+  });
+}
+
+function togglePeriod(periodId) {
+  const button = settingsModal.querySelector(`#${periodId}`);
+  button.textContent = button.textContent === 'AM' ? 'PM' : 'AM';
+}
+
+function validateInput(e) {
+  const input = e.target;
+  const value = parseInt(input.value);
+  const min = parseInt(input.min);
+  const max = parseInt(input.max);
+  
+  if (isNaN(value) || value < min || value > max) {
+    input.classList.add('input-error');
+  } else {
+    input.classList.remove('input-error');
+  }
+}
+
+function saveSettingsAndClose() {
+  const modal = settingsModal;
+  
+  // Validate all inputs
+  const inputs = modal.querySelectorAll('.time-input, .number-input');
+  let isValid = true;
+  
+  inputs.forEach(input => {
+    const value = parseInt(input.value);
+    const min = parseInt(input.min);
+    const max = parseInt(input.max);
+    if (isNaN(value) || value < min || value > max) {
+      isValid = false;
+      input.style.borderColor = '#ff6b6b';
+    }
+  });
+  
+  if (!isValid) {
+    alert('Please fix the invalid values before saving.');
+    return;
+  }
+  
+  // Save sleep time
+  let sleepHour = parseInt(modal.querySelector('#sleep-hour').value);
+  const sleepPeriod = modal.querySelector('#sleep-period').textContent;
+  if (sleepPeriod === 'PM' && sleepHour !== 12) sleepHour += 12;
+  if (sleepPeriod === 'AM' && sleepHour === 12) sleepHour = 0;
+  
+  settings.sleepTime = {
+    hour: sleepHour,
+    minute: parseInt(modal.querySelector('#sleep-minute').value)
+  };
+  
+  // Save wake time
+  let wakeHour = parseInt(modal.querySelector('#wake-hour').value);
+  const wakePeriod = modal.querySelector('#wake-period').textContent;
+  if (wakePeriod === 'PM' && wakeHour !== 12) wakeHour += 12;
+  if (wakePeriod === 'AM' && wakeHour === 12) wakeHour = 0;
+  
+  settings.wakeTime = {
+    hour: wakeHour,
+    minute: parseInt(modal.querySelector('#wake-minute').value)
+  };
+  
+  // Save resleep delay
+  settings.resleepDelay = parseInt(modal.querySelector('#resleep-delay').value);
+  
+  // Save redirect URL
+  settings.redirectUrl = modal.querySelector('#redirect-url').value;
+  
+  // Save photo transition time
+  settings.photoTransitionTime = parseInt(modal.querySelector('#photo-transition').value);
+  
+  // Theme is already saved when changed (immediate preview)
+  settings.theme = getCurrentTheme();
+  
+  // Update photo widget if it exists
+  updatePhotoWidget();
+  
+  saveSettings();
+  closeSettings();
+}
+
+function updatePhotoWidget() {
+  // Send message to photo widget to update transition time
+  const photoWidgets = document.querySelectorAll('iframe[src*="photos.html"]');
+  photoWidgets.forEach(iframe => {
+    if (iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'update-settings',
+          photoTransitionTime: settings.photoTransitionTime
+        }, '*');
+        console.log('📸 Updated photo widget transition time:', settings.photoTransitionTime);
+      } catch (error) {
+        console.warn('Failed to update photo widget:', error);
+      }
+    }
+  });
+}
+
+export function closeSettings() {
+  if (settingsModal) {
+    settingsModal.remove();
+    settingsModal = null;
+    settingsFocus = { type: 'close', index: 0 };
+  }
+}
+
+// ---------------------
+// SETTINGS NAVIGATION
+// ---------------------
+
+export function updateSettingsFocus() {
+  if (!settingsModal) return;
+  
+  // Clear all highlights
+  settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button, .section-header, .url-select, .album-select, .theme-select')
+    .forEach(el => el.classList.remove('selected'));
+  
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .theme-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
+  
+  if (focusable[settingsFocus.index]) {
+    focusable[settingsFocus.index].classList.add('selected');
+  }
+}
+
+export function moveSettingsFocus(direction) {
+  if (!settingsModal) return;
+  
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .theme-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
+  
+  if (direction === 'up' && settingsFocus.index > 0) {
+    settingsFocus.index--;
+  } else if (direction === 'down' && settingsFocus.index < focusable.length - 1) {
+    settingsFocus.index++;
+  } else if (direction === 'left' && settingsFocus.index > 0) {
+    settingsFocus.index--;
+  } else if (direction === 'right' && settingsFocus.index < focusable.length - 1) {
+    settingsFocus.index++;
+  }
+  
+  updateSettingsFocus();
+}
+
+export function handleSettingsEnter() {
+  if (!settingsModal) return;
+  
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .theme-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
+  
+  const focused = focusable[settingsFocus.index];
+  
+  if (focused) {
+    if (focused.classList.contains('section-header')) {
+      const sectionId = focused.dataset.section;
+      toggleSection(sectionId);
+    } else if (focused.classList.contains('time-period')) {
+      focused.click();
+    } else if (focused.classList.contains('settings-button') || focused.classList.contains('settings-close')) {
+      focused.click();
+    } else if (focused.classList.contains('time-input') || focused.classList.contains('number-input')) {
+      focused.focus();
+      focused.select();
+    } else if (focused.classList.contains('url-select') || focused.classList.contains('album-select') || focused.classList.contains('theme-select')) {
+      focused.focus();
+    }
+  }
+}
+
+// ---------------------
+// PUBLIC API
+// ---------------------
+
+export function isSettingsOpen() {
+  return settingsModal !== null;
+}
