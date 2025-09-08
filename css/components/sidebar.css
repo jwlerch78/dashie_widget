@@ -32,6 +32,7 @@
     var(--bg-primary) 40%,
     var(--bg-primary-semi-transparent) 100%
   );
+    z-index: var( --z-sidebar-expanded);
 }
 
 /* Dashie logo at top - always takes up space */
