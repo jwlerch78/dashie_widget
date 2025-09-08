@@ -112,9 +112,8 @@ body:not([class*="theme-"]) {
 
 /* ===== LIGHT THEME ===== */
 body.theme-light {
-  /* Background Colors - Light blue theme */
-  --bg-primary: #f5f5f5;    /* Off-white grid background */
-  --bg-secondary: #f5f5f5;    /* Off-white widget background */
+  --bg-primary: #FCFCFF;    /* Off-white grid background */
+  --bg-secondary: #FCFCFF;    /* Off-white widget background */
   --bg-modal-backdrop: rgba(0, 0, 0, 0.5);
   --bg-sleep: #000;           /* Keep sleep mode black */
   --bg-button: #90a4ae;       /* Light gray buttons */
@@ -126,7 +125,7 @@ body.theme-light {
   --bg-fallback-widget: var(--bg-tertiary);
   --bg-button-semi: rgba(144, 164, 174, 0.6);
   --bg-menu-overlay: rgba(245, 245, 245, 0.9);
-  --grid-gap-color: #e3f2fd;  /* Light blue grid gaps */
+  --grid-gap-color: #5E85FF;  /* Light blue grid gaps */
 
   /* Text Colors - Dark gray for readability */
   --text-primary: #424242;    /* Dark gray text */
