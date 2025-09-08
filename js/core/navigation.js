@@ -123,7 +123,7 @@ export function sendToWidget(action) {
 export function moveFocus(dir) {
   if (state.isAsleep || state.confirmDialog) return; // Don't move focus when asleep or in modal
   
-  // Reset timer on any navigation input
+  // Reset timer on any navigation input - this should wake up highlights
   resetHighlightTimer();
   
   if (state.selectedCell) {
@@ -149,6 +149,7 @@ export function moveFocus(dir) {
         ];
         const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
         setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
+        updateFocus(); // Call updateFocus here to apply the changes
         return;
       }
       col = Math.max(1, col - 1);
@@ -198,6 +199,7 @@ export function moveFocus(dir) {
     if (dir === "right") {
       // Leave sidebar → go to grid
       setFocus({ type: "grid", row: 2, col: 1 });
+      updateFocus(); // Call updateFocus here to apply the changes
       return;
     }
 
@@ -297,8 +299,9 @@ export function openMenuWithCurrentSelection() {
 
 // Initialize highlight system
 export function initializeHighlightTimeout() {
-  // Start the timer when the app loads
-  showHighlights();
+  // Start with highlights hidden (clean dashboard on startup)
+  isHighlightVisible = false;
+  document.body.classList.add('highlights-hidden');
   
-  console.log("Navigation highlight timeout system initialized");
+  console.log("Navigation highlight timeout system initialized - starting with hidden highlights");
 }
