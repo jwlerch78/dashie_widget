@@ -1,4 +1,4 @@
-// widgets/calendar/calendar.js - Calendar Widget Logic
+// widgets/calendar/calendar.js - Calendar Widget Logic with Preserved Event Colors
 
 class CalendarWidget {
   constructor() {
@@ -7,22 +7,25 @@ class CalendarWidget {
     this.currentDate = new Date();
     this.viewCycle = ['week', 'month', 'daily'];
     
+    // Calendar configuration with distinct colors that won't be overridden
     this.calendars = [
       {
         id: 'calendar1',
         name: 'Main Calendar',
         url: 'https://calendar.playmetrics.com/calendars/c1334/t398340/p0/t2BDEDC4E/f/calendar.ics',
-        color: 'var(--cal-navy)',
-        backgroundColor: 'var(--cal-navy)',
-        borderColor: 'var(--cal-navy)'
+        // Use strong, distinct colors for better visibility
+        color: '#ffffff', // White text on colored background
+        backgroundColor: '#1976d2', // Material Blue
+        borderColor: '#1976d2'
       },
       {
         id: 'calendar2', 
         name: 'Secondary Calendar',
         url: 'https://calendar.playmetrics.com/calendars/c379/t346952/p0/tEB6F077C/f/calendar.ics',
-        color: 'var(--cal-green)',
-        backgroundColor: 'var(--cal-green)',
-        borderColor: 'var(--cal-green)'
+        // Use contrasting color
+        color: '#ffffff', // White text on colored background
+        backgroundColor: '#388e3c', // Material Green
+        borderColor: '#388e3c'
       }
     ];
     
@@ -79,9 +82,6 @@ class CalendarWidget {
         useCreationPopup: false,
         useDetailPopup: false,
         calendars: this.calendars,
-        // Remove old v1.x options that don't work in v2.x
-        // taskView: false,           // This doesn't exist in v2.x
-        // scheduleView: ['time'],    // This doesn't exist in v2.x
         week: {
           startDayOfWeek: 1,
           dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -90,7 +90,6 @@ class CalendarWidget {
           hourStart: 6,
           hourEnd: 24,
           showNowIndicator: true,
-          // SOLUTION: These are the correct v2.x options to hide all-day sections
           eventView: ['time'],    // Only show time panel, hide allday panel
           taskView: false         // Hide milestone and task panels
         },
@@ -102,7 +101,14 @@ class CalendarWidget {
           workweek: false
         },
         template: {
-          time: (schedule) => `<span style="color: white;">${schedule.title}</span>`
+          // Custom template to ensure colors are preserved
+          time: (schedule) => {
+            const calendar = this.calendars.find(cal => cal.id === schedule.calendarId);
+            const bgColor = calendar ? calendar.backgroundColor : '#1976d2';
+            const textColor = calendar ? calendar.color : '#ffffff';
+            
+            return `<span style="color: ${textColor}; font-weight: 500;">${schedule.title}</span>`;
+          }
         }
       });
 
@@ -302,9 +308,16 @@ class CalendarWidget {
         start: eventDate,
         end: endDate,
         category: 'time',
+        // Use calendar-specific colors that won't be overridden
         backgroundColor: cal.backgroundColor,
         borderColor: cal.borderColor,
-        color: 'white'
+        color: cal.color,
+        // Add custom styling to ensure colors persist
+        customStyle: {
+          backgroundColor: cal.backgroundColor,
+          borderColor: cal.borderColor,
+          color: cal.color
+        }
       });
     }
     
