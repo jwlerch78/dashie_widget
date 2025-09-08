@@ -80,8 +80,8 @@ export function updateFocus() {
     elements.sidebar.classList.remove("expanded");
   }
 
-  // focused widget
-  if (state.selectedCell) {
+  // focused widget - check if selectedCell exists before trying to use it
+  if (state.selectedCell && state.selectedCell.classList) {
     state.selectedCell.classList.add("focused");
   }
 
@@ -134,6 +134,8 @@ export function moveFocus(dir) {
 
   if (state.focus.type === "grid") {
     let { row, col } = state.focus;
+    let newRow = row;
+    let newCol = col;
 
     if (dir === "left") {
       if (col === 1) {
@@ -152,23 +154,31 @@ export function moveFocus(dir) {
         updateFocus(); // Call updateFocus here to apply the changes
         return;
       }
-      col = Math.max(1, col - 1);
+      newCol = Math.max(1, col - 1);
     }
 
     if (dir === "right") {
-      if (col === 2) return; // Can't go further right
-      col = Math.min(2, col + 1);
+      newCol = Math.min(2, col + 1);
+      // Don't return if hitting edge - stay on current position
+      if (newCol === col) return;
     }
 
     if (dir === "up") {
-      row = Math.max(1, row - 1);
+      newRow = Math.max(1, row - 1);
+      // Don't return if hitting edge - stay on current position
+      if (newRow === row) return;
     }
 
     if (dir === "down") {
-      row = Math.min(3, row + 1);
+      newRow = Math.min(3, row + 1);
+      // Don't return if hitting edge - stay on current position
+      if (newRow === row) return;
     }
 
-    setFocus({ type: "grid", row, col });
+    // Only update focus if we have a valid position that changed
+    if (newRow !== row || newCol !== col) {
+      setFocus({ type: "grid", row: newRow, col: newCol });
+    }
   }
 
   if (state.focus.type === "menu") {
@@ -302,6 +312,8 @@ export function initializeHighlightTimeout() {
   // Start with highlights hidden (clean dashboard on startup)
   isHighlightVisible = false;
   document.body.classList.add('highlights-hidden');
+  
+  // DON'T call resetHighlightTimer here - let the first navigation input show highlights
   
   console.log("Navigation highlight timeout system initialized - starting with hidden highlights");
 }
