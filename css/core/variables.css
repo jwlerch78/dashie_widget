@@ -22,16 +22,17 @@
   --accent-blue: #00aaff;
   
   /* Interactive States */
+/* Enhanced Interactive States */
   --outline-selected: var(--accent-orange);
   --outline-focused: var(--accent-blue);
-  --outline-width-selected: 3px;
-  --outline-width-focused: 4px;
-  --outline-offset: 2px;
-  --outline-offset-widget: 3px;
+  --outline-width-selected: 6px;  /* Increased from 3px */
+  --outline-width-focused: 8px;   /* Increased from 4px */
+  --outline-offset: 4px;          /* Increased from 2px */
+  --outline-offset-widget: 6px;   /* Increased from 3px */
   
-  /* Glow Effects */
-  --glow-selected: 0 0 15px rgba(255, 170, 0, 0.5);
-  --glow-focused: 0 0 20px rgba(0, 170, 255, 0.6);
+  /* Enhanced Glow Effects */
+  --glow-selected: 0 0 25px rgba(255, 170, 0, 0.8), 0 0 50px rgba(255, 170, 0, 0.4);
+  --glow-focused: 0 0 30px rgba(0, 170, 255, 0.9), 0 0 60px rgba(0, 170, 255, 0.5);
   
   /* Layout & Spacing */
   --sidebar-width-collapsed: 60px;
