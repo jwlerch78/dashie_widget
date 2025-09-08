@@ -14,6 +14,7 @@ export const elements = {
 export const widgetUrls = {
   calendar: "widgets/calendar.html",
   clock: "widgets/clock.html", 
+  location: "widgets/location.html",
   map: "widgets/map.html",
   agenda: "widgets/agenda.html",
   photos: "widgets/photos.html",
@@ -22,7 +23,7 @@ export const widgetUrls = {
 
 // Widget layout configuration
 export const widgets = [
-  { id: "map", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations", url: widgetUrls.map },
+  { id: "location", row: 1, col: 1, rowSpan: 1, colSpan: 1, label: "🗺️ Locations", url: widgetUrls.location },
   { id: "clock", row: 1, col: 2, rowSpan: 1, colSpan: 1, label: "⏰ Clock", url: widgetUrls.clock },
   { id: "main", row: 2, col: 1, rowSpan: 2, colSpan: 1, label: "📅 Calendar", url: widgetUrls.calendar }, 
   { id: "agenda", row: 2, col: 2, rowSpan: 1, colSpan: 1, label: "📝 Agenda", url: widgetUrls.agenda },
