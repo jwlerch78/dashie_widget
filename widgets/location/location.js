@@ -1,4 +1,4 @@
-// location.js
+// location.js - Updated for new dashboard structure
 // -----------------------------
 // Globals
 let map;
@@ -32,7 +32,7 @@ async function reverseGeocode(lat, lon) {
     const resp = await fetch(`${PROXY_URL}/reverse?lat=${lat}&lon=${lon}`);
     const json = await resp.json();
 
-    console.log("Reverse geocode response:", json); // 👈 always log
+    console.log("Reverse geocode response:", json);
     
     const addr = json.address || {};
     const result =
@@ -114,10 +114,42 @@ function initMap() {
 }
 
 // -----------------------------
+// Helper function to find widget iframes in new grid system
+function findLocationWidget() {
+  // Method 1: Try to find by widget ID in the new grid system
+  const locationGridItem = document.querySelector('[data-widget-id="map"]');
+  if (locationGridItem) {
+    const iframe = locationGridItem.querySelector('iframe');
+    if (iframe) {
+      console.log("Found location widget via grid system");
+      return iframe;
+    }
+  }
+
+  // Method 2: Try to find by iframe source containing "location"
+  const locationFrames = document.querySelectorAll('iframe[src*="location"]');
+  if (locationFrames.length > 0) {
+    console.log("Found location widget via iframe source");
+    return locationFrames[0];
+  }
+
+  // Method 3: Try legacy ID (for backward compatibility)
+  const legacyFrame = document.getElementById("location-frame");
+  if (legacyFrame) {
+    console.log("Found location widget via legacy ID");
+    return legacyFrame;
+  }
+
+  console.warn("Location widget iframe not found");
+  return null;
+}
+
+// -----------------------------
 // Update locations and notify widgets
 async function updateLocations() {
   if (!map) return;
 
+  console.log("Starting location update cycle...");
   const now = Date.now();
   const boundsArray = [];
 
@@ -126,19 +158,26 @@ async function updateLocations() {
       const resp = await fetch(`${PROXY_URL}/positions/${device.id}?limit=2`);
       const data = await resp.json();
 
-      console.log(`Device ${device.id} Traccar response:`, data);
+      console.log(`Device ${device.id} (${device.name}) Traccar response:`, data);
       
-      if (!Array.isArray(data) || !data.length) continue;
+      if (!Array.isArray(data) || !data.length) {
+        console.warn(`No position data for device ${device.name}`);
+        continue;
+      }
+      
       const pos = data[0];
       const prev = data[1];
 
-      if (!pos.latitude || !pos.longitude) continue;
+      if (!pos.latitude || !pos.longitude) {
+        console.warn(`Invalid coordinates for device ${device.name}:`, pos);
+        continue;
+      }
 
       // Zone + reverse geocode
       const zoneName = getZone(pos.latitude, pos.longitude) || await reverseGeocode(pos.latitude, pos.longitude);
       const poiName = pos.poi || '';
 
-      // Speed / movement
+      // Speed / movement calculation
       let speedMph = 0, movementStatus = "No";
       if (prev && prev.latitude && prev.longitude && prev.serverTime) {
         const lat1 = prev.latitude * Math.PI / 180;
@@ -155,7 +194,7 @@ async function updateLocations() {
         }
       }
 
-      // Distance from home
+      // Distance from home calculation
       const R = 6371e3;
       const φ1 = pos.latitude * Math.PI / 180;
       const φ2 = HOME_LOCATION.lat * Math.PI / 180;
@@ -165,33 +204,46 @@ async function updateLocations() {
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distanceMiles = (R * c * 0.000621371).toFixed(1);
 
+      // Calculate time at location (you can implement this based on your needs)
+      const timeAtLocation = "Unknown"; // Placeholder - implement based on position history
+
       // Save marker for formations
       markers[device.name] = { lat: pos.latitude, lon: pos.longitude };
 
-
       // -----------------------------
-      // Notify location bar widget
-
-const widgetFrame = document.getElementById("location-frame"); 
-if (widgetFrame && widgetFrame.contentWindow) {
-  widgetFrame.contentWindow.postMessage(
-    {
-      type: "locationUpdate",
-      payload: {
-        device: device.name,
-        zone: zoneName,
-        poi: poiName,
-        speedMph,
-        movementStatus,
-        distance: distanceMiles
+      // Notify location widget using new grid system
+      const locationWidget = findLocationWidget();
+      if (locationWidget && locationWidget.contentWindow) {
+        console.log(`Sending location update for ${device.name}:`, {
+          device: device.name,
+          zone: zoneName,
+          poi: poiName,
+          speedMph,
+          movementStatus,
+          distance: distanceMiles,
+          timeAtLocation
+        });
+        
+        locationWidget.contentWindow.postMessage(
+          {
+            type: "locationUpdate",
+            payload: {
+              device: device.name,
+              zone: zoneName,
+              poi: poiName,
+              speedMph,
+              movementStatus,
+              distance: distanceMiles,
+              timeAtLocation
+            }
+          },
+          "*"
+        );
+      } else {
+        console.warn("Location widget not found - cannot send update");
       }
-    },
-    "*"
-  );
-}
-      
 
-      // Notify map widget
+      // Notify map widget (if you have a separate map widget)
       if (typeof window.updateMapMarkers === "function") {
         window.updateMapMarkers({
           device: device.name,
@@ -205,17 +257,49 @@ if (widgetFrame && widgetFrame.contentWindow) {
       boundsArray.push([pos.latitude, pos.longitude]);
 
     } catch (err) {
-      console.error(`Error fetching ${device.name}:`, err);
+      console.error(`Error fetching location for ${device.name}:`, err);
     }
   }
 
   applyFormations();
+  console.log("Location update cycle completed");
 
-  // Repeat every 30s
-  if (!locationInterval) locationInterval = setInterval(updateLocations, 30000);
+  // Schedule next update
+  if (!locationInterval) {
+    locationInterval = setInterval(updateLocations, 30000);
+    console.log("Location update interval started (30 seconds)");
+  }
 }
 
 // -----------------------------
-// Initialize
-initMap();
-updateLocations();
+// Initialize location system when ready
+function initLocationSystem() {
+  console.log("Initializing location system...");
+  
+  // Wait for widgets to be ready
+  const checkWidgets = (attempts = 0) => {
+    const maxAttempts = 10;
+    const locationWidget = findLocationWidget();
+    
+    if (locationWidget) {
+      console.log("Location widget found, starting location system");
+      initMap();
+      updateLocations();
+    } else if (attempts < maxAttempts) {
+      console.log(`Location widget not ready, retrying in 1 second... (attempt ${attempts + 1}/${maxAttempts})`);
+      setTimeout(() => checkWidgets(attempts + 1), 1000);
+    } else {
+      console.error("Failed to find location widget after maximum attempts");
+    }
+  };
+
+  // Start checking for widgets
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => checkWidgets(0));
+  } else {
+    checkWidgets(0);
+  }
+}
+
+// Auto-initialize when script loads
+initLocationSystem();
