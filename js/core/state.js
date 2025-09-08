@@ -19,7 +19,7 @@ export const widgetUrls = {
   agenda: "widgets/agenda.html",
   photos: "widgets/photos.html",
   camera: "widgets/camera.html", // for future camera widget
-  header: "widgets/family_header.html"
+  header: "widgets/header.html"
 };
 
 // Widget layout configuration
