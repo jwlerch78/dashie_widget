@@ -1,16 +1,20 @@
 /* css/components/navigation.css - Focus & Selection States */
 
-/* Widget selection and focus states */
+/* Enhanced Widget selection and focus states - replace existing in css/components/navigation.css */
 .widget.selected {
-  outline: 3px solid var(--outline-selected);
-  outline-offset: 3px;
+  outline: var(--outline-width-selected) solid var(--outline-selected);
+  outline-offset: var(--outline-offset-widget);
   box-shadow: var(--glow-selected);
+  transform: scale(1.02); /* Subtle scale effect */
+  transition: all var(--transition-fast);
 }
 
 .widget.focused {
-  outline: 5px solid var(--outline-focused);
-  outline-offset: 3px;
+  outline: var(--outline-width-focused) solid var(--outline-focused);
+  outline-offset: var(--outline-offset-widget);
   box-shadow: var(--glow-focused);
+  transform: scale(1.04); /* Slightly larger scale */
+  transition: all var(--transition-fast);
 }
 
 /* Menu item selection and focus states */
