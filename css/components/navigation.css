@@ -7,6 +7,8 @@
   box-shadow: var(--glow-selected);
   transform: scale(1.02); /* Subtle scale effect */
   transition: all var(--transition-fast);
+  position: relative;
+  z-index: 100;
 }
 
 .widget.focused {
@@ -15,6 +17,8 @@
   box-shadow: var(--glow-focused);
   transform: scale(1.04); /* Slightly larger scale */
   transition: all var(--transition-fast);
+  position: relative;
+  z-index: 200;
 }
 
 /* Menu item selection and focus states */
