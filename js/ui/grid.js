@@ -1,4 +1,4 @@
-// js/ui/grid.js - Widget Grid & Sidebar Rendering
+// js/ui/grid.js - Widget Grid & Sidebar Rendering with Theme Support
 
 import { state, elements, widgets, sidebarMapping, setFocus } from '../core/state.js';
 
@@ -21,9 +21,16 @@ function createWidgetIframe(widget) {
     }
   });
   
-  // Add load event listener
+  // Add load event listener and apply theme when widget loads
   iframe.addEventListener("load", () => {
     console.log(`Widget iframe loaded: ${widget.id}`);
+    
+    // Apply current theme to newly loaded widget
+    import('../core/theme.js').then(({ applyThemeToWidget }) => {
+      applyThemeToWidget(iframe);
+    }).catch(() => {
+      console.log('Theme system not available for widget theming');
+    });
   });
   
   // Add error handling
