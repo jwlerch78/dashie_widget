@@ -13,38 +13,52 @@ html, body {
   background: var(--bg-primary, #000);
   color: var(--text-primary, #fff);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Container that fills the entire space */
+.clock-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   padding: 0 20px;
-  box-sizing: border-box; /* Ensures padding is included in width */
+  box-sizing: border-box;
+  background: var(--bg-primary, #000);
 }
-  #time {
-    font-size: 10vw;
-    font-weight: bold;
-    padding-right: 20px;
-    text-align: right;
-  }
-  #weather {
-    font-size: 6vw;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-  #weather-icon {
-    margin-right: 15px;
-  }
+
+#time {
+  font-size: 10vw;
+  font-weight: bold;
+  text-align: right;
+  color: var(--text-primary, #fff);
+}
+
+#weather {
+  font-size: 6vw;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-primary, #fff);
+}
+
+#weather-icon {
+  margin-right: 15px;
+}
 </style>
 </head>
 <body>
-  <!-- Swapped the order: weather first, then time -->
-  <div id="weather">
-    <span id="weather-icon">☀️</span>
-    <span id="temperature">--°F</span>
+  <div class="clock-container">
+    <!-- Swapped the order: weather first, then time -->
+    <div id="weather">
+      <span id="weather-icon">☀️</span>
+      <span id="temperature">--°F</span>
+    </div>
+    <div id="time">--:--</div>
   </div>
-  <div id="time">--:--</div>
 
 <script>
 function updateTime() {
