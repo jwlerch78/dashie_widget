@@ -9,4 +9,6 @@
   gap: var(--grid-gap);
   padding: var(--grid-gap);
   box-sizing: border-box;
+  background: var(--grid-gap-color);
+
 }
