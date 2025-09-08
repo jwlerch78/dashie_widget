@@ -89,7 +89,10 @@ class CalendarWidget {
           workweek: false,
           hourStart: 6,
           hourEnd: 24,
-          showNowIndicator: true
+          showNowIndicator: true,
+          // SOLUTION: These are the correct v2.x options to hide all-day sections
+          eventView: ['time'],    // Only show time panel, hide allday panel
+          taskView: false         // Hide milestone and task panels
         },
         month: {
           startDayOfWeek: 1,
