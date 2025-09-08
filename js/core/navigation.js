@@ -33,6 +33,12 @@ function hideHighlights() {
   isHighlightVisible = false;
   document.body.classList.add('highlights-hidden');
   
+  // If a widget was focused and timed out, clear the selection
+  if (state.selectedCell) {
+    setSelectedCell(null);
+    console.log(`Focused widget timed out - cleared selection`);
+  }
+  
   // If sidebar is highlighted, close it entirely
   if (state.focus.type === "menu") {
     elements.sidebar.classList.remove("expanded");
@@ -311,11 +317,21 @@ function handleMenuSelection(optionId) {
     case "calendar":
     case "map":
     case "camera":
+      // These need to trigger the grid re-rendering with new main widget
       setCurrentMain(optionId);
-      setFocus({ type: "grid", row: 2, col: 1 });
-      // Close sidebar after selection
-      elements.sidebar.classList.remove("expanded");
-      updateFocus();
+      
+      // Import and call the grid rendering functions
+      import('../ui/grid.js').then(({ renderGrid, renderSidebar }) => {
+        renderGrid();
+        renderSidebar();
+        
+        // Move focus back to grid and close sidebar
+        setFocus({ type: "grid", row: 2, col: 1 });
+        elements.sidebar.classList.remove("expanded");
+        updateFocus();
+        
+        console.log(`Switched main widget to: ${optionId}`);
+      });
       break;
     case "reload":
       window.location.reload();
@@ -324,18 +340,24 @@ function handleMenuSelection(optionId) {
       // Import and trigger sleep mode
       import('../ui/modals.js').then(({ goToSleep }) => {
         goToSleep();
+      }).catch(() => {
+        console.log("Sleep function not available");
       });
       break;
     case "settings":
       // Import and open settings
       import('../ui/settings.js').then(({ openSettings }) => {
         openSettings();
+      }).catch(() => {
+        console.log("Settings function not available");
       });
       break;
     case "exit":
       // Import and show exit confirmation
       import('../ui/modals.js').then(({ showExitConfirmation }) => {
         showExitConfirmation();
+      }).catch(() => {
+        console.log("Exit confirmation not available");
       });
       break;
   }
