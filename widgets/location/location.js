@@ -1,221 +1,279 @@
-// location.js
-// -----------------------------
-// Globals
-let map;
-const markers = {}; // store lat/lon for formations
-const reverseGeoCache = {};
-let locationInterval;
-const PROXIMITY_THRESHOLD = 0.00015; // ~15 meters
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+<!-- widgets/location.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Location Widget</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  
+<style>
+/* Base page styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #000;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-// -----------------------------
-// Helper: zones
-function getZone(lat, lon) {
-  for (let zone of ZONES) {
-    const dist = Math.sqrt((lat - zone.lat) ** 2 + (lon - zone.lon) ** 2);
-    if (dist <= zone.radius) return zone.name;
+/* Family Tracker bar - FIXED FOR 10VH */
+#family-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* spread members across full width */
+  align-items: center; /* Center vertically within the 10vh */
+  padding: 4px 8px; /* Minimal padding to fit in 10vh */
+  background: #000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: height 0.3s ease;
+  overflow: hidden;
+  height: 100%; /* Fill the 10vh container */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#family-bar.location-mode {
+  height: 320px; /* taller in location mode */
+}
+
+/* Each member card - SIZED FOR 10VH */
+.member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically */
+  background-color: #111;
+  padding: 2px 6px; /* Minimal padding */
+  border-radius: 6px;
+  min-width: 0;
+  width: calc(20% - 8px);
+  flex: 1;
+  margin: 0 2px;
+  box-sizing: border-box;
+  height: 100%; /* Fill available height */
+}
+
+/* Top row: image + location */
+.member-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center; /* center horizontally inside member */
+  width: 100%;
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Profile photo - SMALLER FOR 10VH */
+.member-top img {
+  width: clamp(25px, 4vh, 35px); /* Much smaller: min 25px, max 35px */
+  height: clamp(25px, 4vh, 35px);
+  border-radius: 50%;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+/* Info next to photo (main location + subtext) */
+.member-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  flex: 1;
+  min-width: 0; /* Allow text to shrink and wrap */
+}
+
+/* Main location text - SMALLER FOR 10VH */
+.location {
+  font-size: clamp(10px, 1.5vh, 14px); /* Much smaller font */
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1; /* Tighter line height */
+}
+
+/* Subtext below main location */
+.location-sub {
+  font-size: clamp(8px, 1.2vh, 11px); /* Much smaller font */
+  color: #ccc;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+}
+
+/* Expanded info (centered under entire top row) */
+.member-extra {
+  display: none;
+  flex-direction: column;
+  font-size: clamp(11px, 2vw, 14px); /* Responsive font size */
+  color: #ddd;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 12px; /* spacing below top row */
+  width: 100%; /* span entire member card */
+  box-sizing: border-box;
+}
+
+#family-bar.location-mode .member-extra {
+  display: flex;
+}
+
+/* Optional small icons in subtext */
+.status-icon img {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 3px;
+}
+
+/* Media query for very small screens */
+@media (max-width: 600px) {
+  .member-top {
+    flex-direction: column; /* Stack image above text on small screens */
+    text-align: center;
   }
-  return null;
-}
-
-// -----------------------------
-// Reverse geocode cache
-async function reverseGeocode(lat, lon) {
-  const key = `${lat.toFixed(8)},${lon.toFixed(8)}`;
-  const now = Date.now();
-
-  if (reverseGeoCache[key] && now - reverseGeoCache[key].timestamp < CACHE_TTL_MS) {
-    return reverseGeoCache[key].result;
+  
+  .member-top img {
+    margin-right: 0;
+    margin-bottom: 4px;
   }
-
-  try {
-    const resp = await fetch(`${PROXY_URL}/reverse?lat=${lat}&lon=${lon}`);
-    const json = await resp.json();
-
-    console.log("Reverse geocode response:", json); // 👈 always log
-    
-    const addr = json.address || {};
-    const result =
-      addr.city || addr.town || addr.village || addr.hamlet ||
-      addr.suburb || addr.county || addr.state || json.display_name || "Unknown location";
-
-    reverseGeoCache[key] = { timestamp: now, result };
-    return result;
-  } catch (err) {
-    console.error("Reverse geocode error:", err);
-    return "Unknown location";
+  
+  .member-info {
+    text-align: center;
   }
 }
+</style>
+</head>
+<body>
+  <!-- widget_location.html -->
+<div id="family-bar">
+  <!-- Dad -->
+  <div class="member" id="dad">
+    <div class="member-top">
+      <img src="https://raw.githubusercontent.com/jwlerch78/family_calendar/main/images/Dad.png" alt="Dad">
+      <div class="member-info">
+        <div class="location" id="dad-location">Loading...</div>
+        <div class="location-sub" id="dad-sub"></div>
+      </div>
+    </div>
+    <div class="member-extra" id="dad-extra"></div>
+  </div>
 
-// -----------------------------
-// Formation offsets to avoid overlapping markers
-function getFormationOffsets(count, radius = PROXIMITY_THRESHOLD) {
-  const offsets = [];
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * 2 * Math.PI;
-    offsets.push([radius * Math.cos(angle), radius * Math.sin(angle)]);
+  <!-- Mom -->
+  <div class="member" id="mom">
+    <div class="member-top">
+      <img src="https://raw.githubusercontent.com/jwlerch78/family_calendar/main/images/Mom.png" alt="Mom">
+      <div class="member-info">
+        <div class="location" id="mom-location">Loading...</div>
+        <div class="location-sub" id="mom-sub"></div>
+      </div>
+    </div>
+    <div class="member-extra" id="mom-extra"></div>
+  </div>
+
+  <!-- Mary -->
+  <div class="member" id="mary">
+    <div class="member-top">
+      <img src="https://raw.githubusercontent.com/jwlerch78/family_calendar/main/images/Mary.png" alt="Mary">
+      <div class="member-info">
+        <div class="location" id="mary-location">Loading...</div>
+        <div class="location-sub" id="mary-sub"></div>
+      </div>
+    </div>
+    <div class="member-extra" id="mary-extra"></div>
+  </div>
+
+  <!-- Charlie -->
+  <div class="member" id="charlie">
+    <div class="member-top">
+      <img src="https://raw.githubusercontent.com/jwlerch78/family_calendar/main/images/Char.png" alt="Charlie">
+      <div class="member-info">
+        <div class="location" id="charlie-location">Loading...</div>
+        <div class="location-sub" id="charlie-sub"></div>
+      </div>
+    </div>
+    <div class="member-extra" id="charlie-extra"></div>
+  </div>
+
+  <!-- Jack -->
+  <div class="member" id="jack">
+    <div class="member-top">
+      <img src="https://raw.githubusercontent.com/jwlerch78/family_calendar/main/images/Jack.png" alt="Jack">
+      <div class="member-info">
+        <div class="location" id="jack-location">Loading...</div>
+        <div class="location-sub" id="jack-sub"></div>
+      </div>
+    </div>
+    <div class="member-extra" id="jack-extra"></div>
+  </div>
+</div>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+<script>
+function updateLocationBar(device) {
+  const bar = document.getElementById("family-bar");
+  if (!bar) return;
+
+  const name = device.device.toLowerCase(); // "device" is the name field in your payload
+  const locEl = document.getElementById(`${name}-location`);
+  const subEl = document.getElementById(`${name}-sub`);
+  const extraEl = document.getElementById(`${name}-extra`);
+
+  if (locEl) locEl.textContent = device.zone || "Unknown location";
+  if (subEl) subEl.textContent = device.distance ? `${device.distance} mi away` : "";
+  if (extraEl) extraEl.innerHTML = `
+    At Location: ${device.timeAtLocation || "Unknown"}<br>
+    Speed: ${device.speedMph || 0} mph<br>
+    Is Moving: ${device.movementStatus || "No"}<br>
+    ${device.poi || ""}
+  `;
+}
+
+window.addEventListener("message", (event) => {
+  const { type, payload, action } = event.data || {};
+  const bar = document.getElementById("family-bar");
+  if (!bar) return;
+
+  // --- Location mode class ---
+  if (action === "enterLocationMode") bar.classList.add("location-mode");
+  if (action === "exitLocationMode") bar.classList.remove("location-mode");
+
+  // --- Location update data ---
+  if (type === "locationUpdate") {
+    console.log("Updating location bar with payload:", payload);
+    updateLocationBar(payload);
   }
-  return offsets;
-}
+});
 
-function applyFormations() {
-  if (!map) return;
-  const positions = Object.values(markers);
-  if (!positions.length) return;
+console.log("Location bar widget initialized");
 
-  // Simple grouping for proximity
-  const groups = [];
-  const used = new Set();
-
-  positions.forEach((m, i) => {
-    if (used.has(i)) return;
-    const group = [m]; used.add(i);
-    for (let j = i + 1; j < positions.length; j++) {
-      if (used.has(j)) continue;
-      const dx = m.lat - positions[j].lat;
-      const dy = m.lon - positions[j].lon;
-      if (Math.sqrt(dx * dx + dy * dy) <= PROXIMITY_THRESHOLD) {
-        group.push(positions[j]);
-        used.add(j);
-      }
-    }
-    groups.push(group);
-  });
-
-  // Apply offsets
-  groups.forEach(group => {
-    const offsets = getFormationOffsets(group.length);
-    const centroidLat = group.reduce((s, m) => s + m.lat, 0) / group.length;
-    const centroidLon = group.reduce((s, m) => s + m.lon, 0) / group.length;
-
-    group.forEach((item, idx) => {
-      item.latOffset = centroidLat + offsets[idx][0];
-      item.lonOffset = centroidLon + offsets[idx][1];
-    });
-  });
-}
-
-// -----------------------------
-// Initialize hidden Leaflet map for calculations
-function initMap() {
-  const container = document.createElement("div");
-  container.style.width = "1px";
-  container.style.height = "1px";
-  container.style.position = "absolute";
-  container.style.top = "-9999px";
-  document.body.appendChild(container);
-
-  map = L.map(container, { zoomControl: true });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-
-  map.setView([0, 0], 2);
-}
-
-// -----------------------------
-// Update locations and notify widgets
-async function updateLocations() {
-  if (!map) return;
-
-  const now = Date.now();
-  const boundsArray = [];
-
-  for (const device of DEVICES) {
-    try {
-      const resp = await fetch(`${PROXY_URL}/positions/${device.id}?limit=2`);
-      const data = await resp.json();
-
-      console.log(`Device ${device.id} Traccar response:`, data);
-      
-      if (!Array.isArray(data) || !data.length) continue;
-      const pos = data[0];
-      const prev = data[1];
-
-      if (!pos.latitude || !pos.longitude) continue;
-
-      // Zone + reverse geocode
-      const zoneName = getZone(pos.latitude, pos.longitude) || await reverseGeocode(pos.latitude, pos.longitude);
-      const poiName = pos.poi || '';
-
-      // Speed / movement
-      let speedMph = 0, movementStatus = "No";
-      if (prev && prev.latitude && prev.longitude && prev.serverTime) {
-        const lat1 = prev.latitude * Math.PI / 180;
-        const lat2 = pos.latitude * Math.PI / 180;
-        const dLat = (pos.latitude - prev.latitude) * Math.PI / 180;
-        const dLon = (pos.longitude - prev.longitude) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distanceMeters = 6371e3 * c;
-        const timeHrs = (new Date(pos.serverTime) - new Date(prev.serverTime)) / 3600000;
-        if (timeHrs > 0) {
-          speedMph = (distanceMeters * 0.000621371 / timeHrs).toFixed(1);
-          movementStatus = speedMph >= 1 ? "Yes" : "No";
-        }
-      }
-
-      // Distance from home
-      const R = 6371e3;
-      const φ1 = pos.latitude * Math.PI / 180;
-      const φ2 = HOME_LOCATION.lat * Math.PI / 180;
-      const Δφ = (HOME_LOCATION.lat - pos.latitude) * Math.PI / 180;
-      const Δλ = (HOME_LOCATION.lon - pos.longitude) * Math.PI / 180;
-      const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distanceMiles = (R * c * 0.000621371).toFixed(1);
-
-      // Save marker for formations
-      markers[device.name] = { lat: pos.latitude, lon: pos.longitude };
-
-
-      // -----------------------------
-      // Notify location bar widget
-
-const widgetFrame = document.getElementById("location-frame"); 
-if (widgetFrame && widgetFrame.contentWindow) {
-  widgetFrame.contentWindow.postMessage(
-    {
-      type: "locationUpdate",
-      payload: {
-        device: device.name,
-        zone: zoneName,
-        poi: poiName,
-        speedMph,
-        movementStatus,
-        distance: distanceMiles
-      }
-    },
-    "*"
-  );
-}
-      
-
-      // Notify map widget
-      if (typeof window.updateMapMarkers === "function") {
-        window.updateMapMarkers({
-          device: device.name,
-          lat: pos.latitude,
-          lon: pos.longitude,
-          zoneName,
-          poiName
-        });
-      }
-
-      boundsArray.push([pos.latitude, pos.longitude]);
-
-    } catch (err) {
-      console.error(`Error fetching ${device.name}:`, err);
-    }
+// Send ready signal to parent
+window.addEventListener('load', () => {
+  if (window.parent !== window) {
+    window.parent.postMessage({ 
+      type: 'widget-ready', 
+      widget: 'location' 
+    }, '*');
   }
-
-  applyFormations();
-
-  // Repeat every 30s
-  if (!locationInterval) locationInterval = setInterval(updateLocations, 30000);
-}
-
-// -----------------------------
-// Initialize
-initMap();
-updateLocations();
+});
+</script>
+</body>
+</html>
