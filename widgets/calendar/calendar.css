@@ -2,20 +2,20 @@
 
 :root {
   /* Calendar Theme Variables */
-  --cal-bg-primary: #333;
-  --cal-bg-secondary: #444;
-  --cal-bg-tertiary: #555;
-  --cal-text-primary: white;
-  --cal-text-secondary: #ccc;
-  --cal-text-muted: #999;
-  --cal-border-radius: 8px;
-  --cal-border-radius-small: 4px;
+  --cal-bg-primary: var(--bg-primary, #222);
+  --cal-bg-secondary: var(--bg-secondary, #333);
+  --cal-bg-tertiary: var(--bg-button, #666);
+  --cal-text-primary: var(--text-primary, white);
+  --cal-text-secondary: var(--text-secondary, #ccc);
+  --cal-text-muted: var(--text-muted, #999);
+  --cal-border-radius: var(--border-radius-small, 16px);
+  --cal-border-radius-small: 8px;
   
   /* Calendar Colors */
   --cal-navy: #1e3a8a;
   --cal-green: #166534;
-  --cal-content-bg: white;
-  --cal-content-text: #333;
+  --cal-content-bg: var(--bg-secondary, #333); /* Changed from white */
+  --cal-content-text: var(--text-primary, #fff); /* Changed from #333 */
   
   /* Calendar Layout */
   --cal-header-height: 50px;
