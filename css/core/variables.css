@@ -27,8 +27,8 @@
   --outline-focused: var(--accent-blue);
   --outline-width-selected: 2px;  /* Increased from 3px */
   --outline-width-focused: 3px;   /* Increased from 4px */
-  --outline-offset: 1px;          /* Increased from 2px */
-  --outline-offset-widget: 1px;   /* Increased from 3px */
+  --outline-offset: 0px;          /* Increased from 2px */
+  --outline-offset-widget: 0px;   /* Increased from 3px */
   
   /* Enhanced Glow Effects */
   --glow-selected: 0 0 20px rgba(255, 170, 0, 0.8), 0 0 45px rgba(255, 170, 0, 0.4);
@@ -52,8 +52,10 @@
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
   
-  /* Z-index Stack */
-  --z-sidebar: 10;
-  --z-modal: 999;
-  --z-sleep: 1000;
+/* Z-index Stack - updated to accommodate widget selection */
+--z-sidebar: 10;
+--z-widget-selected: 100;
+--z-widget-focused: 200;
+--z-modal: 999;
+--z-sleep: 1000;
 }
