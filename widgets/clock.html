@@ -1,126 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clock Widget</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 15px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #333;
-      color: white;
-      height: 100vh;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .clock-display {
-      font-size: 36px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-family: 'Courier New', monospace;
-    }
-
-    .date-display {
-      font-size: 16px;
-      color: #ccc;
-      margin-bottom: 20px;
-    }
-
-    .command-indicator {
-      background: #444;
-      border: 2px solid #666;
-      border-radius: 6px;
-      padding: 10px 15px;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      min-width: 120px;
-      text-align: center;
-    }
-
-    .command-indicator.flash {
-      border-color: #00aaff;
-      background: #445;
-      box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
-    }
-
-    .status {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 12px;
-      color: #999;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clock with Weather</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    padding: 0 20px;
+  }
+  #time {
+    font-size: 10vw;
+    font-weight: bold;
+    text-align: left;
+  }
+  #weather {
+    font-size: 6vw; /* bigger */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  #weather-icon {
+    margin-right: 15px;
+  }
+</style>
 </head>
 <body>
-  <div class="status">⏰ Clock Widget</div>
-  
-  <div class="clock-display" id="timeDisplay">
-    --:--:--
-  </div>
-  
-  <div class="date-display" id="dateDisplay">
-    Loading...
-  </div>
-  
-  <div class="command-indicator" id="commandIndicator">
-    Ready
+  <div id="time">--:--</div>
+  <div id="weather">
+    <span id="weather-icon">☀️</span>
+    <span id="temperature">--°F</span>
   </div>
 
-  <script>
-    function updateTime() {
-      const now = new Date();
-      const timeEl = document.getElementById('timeDisplay');
-      const dateEl = document.getElementById('dateDisplay');
-      
-      timeEl.textContent = now.toLocaleTimeString();
-      dateEl.textContent = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
+<script>
+function updateTime() {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2,'0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+}
 
-    function showCommand(action) {
-      const indicator = document.getElementById('commandIndicator');
-      
-      indicator.textContent = `⬆️ ${action.toUpperCase()}`;
-      indicator.classList.add('flash');
-      
-      setTimeout(() => {
-        indicator.classList.remove('flash');
-        indicator.textContent = 'Ready';
-      }, 800);
-    }
+// Belleair, FL coordinates
+const latitude = 27.9186;
+const longitude = -82.8053;
 
-    // Update time every second
-    setInterval(updateTime, 1000);
-    updateTime(); // Initial update
+const weatherIcons = {
+  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+  45: '🌫️', 48: '🌫️', 51: '🌦️', 53: '🌦️', 55: '🌧️',
+  56: '🌧️', 57: '🌧️', 61: '🌧️', 63: '🌧️', 65: '🌧️',
+  66: '❄️', 67: '❄️', 71: '❄️', 73: '❄️', 75: '❄️',
+  80: '🌧️', 81: '🌧️', 82: '🌧️', 95: '⛈️', 96: '⛈️', 99: '⛈️'
+};
 
-    // Listen for commands from parent dashboard
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data.action) {
-        showCommand(event.data.action);
-        console.log('Clock widget received command:', event.data.action);
-      }
-    });
+async function updateWeather() {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const weatherCode = data.current_weather.weathercode;
+    const temp = Math.round(data.current_weather.temperature);
 
-    // Send ready signal to parent
-    window.addEventListener('load', () => {
-      if (window.parent !== window) {
-        window.parent.postMessage({ 
-          type: 'widget-ready', 
-          widget: 'clock' 
-        }, '*');
-      }
-    });
-  </script>
+    document.getElementById('temperature').textContent = `${temp}°F`;
+    document.getElementById('weather-icon').textContent = weatherIcons[weatherCode] || '🌡️';
+  } catch (err) {
+    console.error('Weather fetch error:', err);
+  }
+}
+
+// Update time every second
+setInterval(updateTime, 1000);
+updateTime();
+
+// Update weather every 10 minutes
+updateWeather();
+setInterval(updateWeather, 600000);
+</script>
 </body>
 </html>
