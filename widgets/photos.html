@@ -133,18 +133,12 @@ document.addEventListener("DOMContentLoaded", function() {
       
       switch(action) {
         case 'right':
+        case 'down':
           nextPhoto();
           break;
         case 'left':
-          prevPhoto();
-          break;
         case 'up':
-          // Optional: could jump forward by 10 photos
-          showPhoto(currentPhotoIndex + 10);
-          break;
-        case 'down':
-          // Optional: could jump backward by 10 photos  
-          showPhoto(currentPhotoIndex - 10);
+          prevPhoto();
           break;
         case 'enter':
           // Optional: could pause/resume auto-advance
