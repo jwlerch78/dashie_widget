@@ -1,10 +1,24 @@
-// js/main.js - App Initialization & Orchestration with Theme Support
+// js/main.js - App Initialization & Orchestration with Early Theme Support
 
 import { initializeEvents } from './core/events.js';
 import { updateFocus, initializeHighlightTimeout } from './core/navigation.js';
 import { renderGrid, renderSidebar } from './ui/grid.js';
 import { initializeSleepTimer } from './ui/settings.js';
 import { initializeThemeSystem } from './core/theme.js';
+
+// ---------------------
+// EARLY THEME APPLICATION
+// ---------------------
+
+// Import and apply theme as early as possible to prevent flash
+async function preApplyTheme() {
+  try {
+    const { applyThemeBeforeLoad } = await import('./core/theme.js');
+    applyThemeBeforeLoad();
+  } catch (error) {
+    console.warn('Early theme application failed:', error);
+  }
+}
 
 // ---------------------
 // APP INITIALIZATION
@@ -14,6 +28,7 @@ function initializeApp() {
   console.log("Initializing Dashie Dashboard...");
   
   // Initialize theme system first (before any UI rendering)
+  // Note: Early theme application already happened above
   initializeThemeSystem();
   
   // Set up event listeners
@@ -34,6 +49,9 @@ function initializeApp() {
   
   console.log("Dashie Dashboard initialized successfully!");
 }
+
+// Pre-apply theme immediately when script loads
+preApplyTheme();
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
