@@ -6,7 +6,6 @@ class CalendarWidget {
     this.currentView = 'week';
     this.currentDate = new Date();
     this.viewCycle = ['week', 'month', 'daily'];
-    this.allDayObserver = null; // Add this property
     
     this.calendars = [
       {
@@ -75,14 +74,14 @@ class CalendarWidget {
       const monday = this.getStartOfWeek(this.currentDate);
       this.currentDate = monday;
       
-      // Add CSS-based hiding first
-      this.addAllDayHidingCSS();
-      
       this.calendar = new tui.Calendar('#calendar', {
         defaultView: this.currentView,
         useCreationPopup: false,
         useDetailPopup: false,
         calendars: this.calendars,
+        // SOLUTION: These options control the 3 all-day sections
+        taskView: false,           // Hides Milestone and Task sections
+        scheduleView: ['time'],    // Only shows time grid, hides 'allday' section
         week: {
           startDayOfWeek: 1,
           dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -108,9 +107,6 @@ class CalendarWidget {
       this.showCalendar();
       this.updateCalendarHeader();
       this.loadCalendarData();
-      
-      // Improved all-day hiding
-      this.hideAllDaySections();
       
       setTimeout(() => this.scrollToTime(8), 200);
       
@@ -147,150 +143,6 @@ class CalendarWidget {
     
     titleEl.textContent = this.currentDate.toLocaleDateString('en-US', options);
     modeEl.textContent = this.currentView.charAt(0).toUpperCase() + this.currentView.slice(1);
-  }
-
-  // IMPROVED: Enhanced all-day section hiding
-  hideAllDaySections() {
-    // Use a more comprehensive approach with multiple timing attempts
-    const hideAttempts = [100, 300, 500, 1000]; // Multiple timings to catch different render phases
-    
-    hideAttempts.forEach(delay => {
-      setTimeout(() => {
-        this.forceHideAllDaySections();
-      }, delay);
-    });
-    
-    // Also set up a MutationObserver to catch dynamically added elements
-    this.setupAllDayObserver();
-  }
-
-  forceHideAllDaySections() {
-    // More comprehensive selectors for Toast UI Calendar all-day sections
-    const selectors = [
-      // Main all-day containers
-      '.toastui-calendar-weekday-allday-container',
-      '.toastui-calendar-allday-container', 
-      '.toastui-calendar-panel-allday',
-      
-      // Week view specific
-      '.toastui-calendar-weekly-view .toastui-calendar-weekday-allday-container',
-      '.toastui-calendar-weekly-view .toastui-calendar-allday-container',
-      '.toastui-calendar-week-view .toastui-calendar-weekday-allday-container',
-      '.toastui-calendar-week-view .toastui-calendar-allday-container',
-      
-      // Any element with 'allday' in the class name
-      '[class*="allday"]',
-      '[class*="all-day"]',
-      
-      // Specific Toast UI Calendar all-day elements
-      '.toastui-calendar-panel-allday',
-      '.toastui-calendar-allday',
-      '.toastui-calendar-weekday-allday'
-    ];
-    
-    let hiddenCount = 0;
-    
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        // Skip if element is already hidden
-        if (el.style.display === 'none') return;
-        
-        // Apply comprehensive hiding styles
-        el.style.cssText = `
-          display: none !important;
-          height: 0 !important;
-          min-height: 0 !important;
-          max-height: 0 !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-          overflow: hidden !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          border: none !important;
-        `;
-        
-        // Also add a CSS class for easier targeting
-        el.classList.add('dashie-hidden-allday');
-        hiddenCount++;
-      });
-    });
-    
-    if (hiddenCount > 0) {
-      console.log(`📅 Hidden ${hiddenCount} all-day elements`);
-    }
-  }
-
-  setupAllDayObserver() {
-    // Watch for dynamically added all-day elements
-    if (this.allDayObserver) {
-      this.allDayObserver.disconnect();
-    }
-    
-    const calendarContainer = document.getElementById('calendar');
-    if (!calendarContainer) return;
-    
-    this.allDayObserver = new MutationObserver((mutations) => {
-      let shouldHide = false;
-      
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === 1) { // Element node
-            // Check if the added node or its children contain all-day elements
-            const hasAllDay = node.classList && (
-              Array.from(node.classList).some(cls => cls.includes('allday')) ||
-              node.querySelector('[class*="allday"]')
-            );
-            
-            if (hasAllDay) {
-              shouldHide = true;
-            }
-          }
-        });
-      });
-      
-      if (shouldHide) {
-        // Small delay to let the elements fully render
-        setTimeout(() => this.forceHideAllDaySections(), 10);
-      }
-    });
-    
-    this.allDayObserver.observe(calendarContainer, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-  }
-
-  // Add CSS-based hiding for extra insurance
-  addAllDayHidingCSS() {
-    const style = document.createElement('style');
-    style.textContent = `
-      /* Force hide all-day sections globally */
-      .toastui-calendar-weekday-allday-container,
-      .toastui-calendar-allday-container,
-      .toastui-calendar-panel-allday,
-      .toastui-calendar-allday,
-      .toastui-calendar-weekday-allday,
-      [class*="allday"]:not(.toastui-calendar-event),
-      .dashie-hidden-allday {
-        display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        max-height: 0 !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        overflow: hidden !important;
-      }
-      
-      /* Ensure time section takes full height */
-      .toastui-calendar-week-view .toastui-calendar-time,
-      .toastui-calendar-weekly-view .toastui-calendar-time {
-        height: 100% !important;
-        flex: 1 !important;
-      }
-    `;
-    document.head.appendChild(style);
   }
 
   handleCommand(action) {
@@ -393,9 +245,6 @@ class CalendarWidget {
       this.calendar.changeView(newView);
       this.updateCalendarHeader();
       
-      // Re-hide all-day sections when changing views
-      this.hideAllDaySections();
-      
       console.log('📅 Changed to', newView, 'view');
       
       if (newView === 'week' || newView === 'daily') {
@@ -457,13 +306,6 @@ class CalendarWidget {
     }
     
     return events;
-  }
-
-  // Clean up observer when destroying calendar
-  destroy() {
-    if (this.allDayObserver) {
-      this.allDayObserver.disconnect();
-    }
   }
 }
 
