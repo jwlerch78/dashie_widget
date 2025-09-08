@@ -138,6 +138,15 @@ export function moveFocus(dir) {
     if (dir === "left") {
       if (col === 1) {
         // Leaving grid → go to sidebar
+        const sidebarOptions = [
+          { id: "main", label: "Main" },
+          { id: "map", label: "Map" },
+          { id: "camera", label: "Camera" },
+          { id: "calendar", label: "Calendar" },
+          "---",
+          { id: "reload", label: "Reload Dashie" },
+          { id: "exit", label: "Exit Dashie" }
+        ];
         const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
         setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
         return;
@@ -260,7 +269,7 @@ function handleMenuSelection(optionId) {
       window.location.reload();
       break;
     case "exit":
-      // Handle exit confirmation
+      // Handle exit confirmation - you'll need to implement this
       break;
   }
 }
