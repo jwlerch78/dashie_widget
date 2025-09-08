@@ -32,7 +32,14 @@ function clearHighlightTimer() {
 function hideHighlights() {
   isHighlightVisible = false;
   document.body.classList.add('highlights-hidden');
-  console.log(`Navigation highlights hidden after timeout`);
+  
+  // If sidebar is highlighted, close it entirely
+  if (state.focus.type === "menu") {
+    elements.sidebar.classList.remove("expanded");
+    console.log(`Navigation highlights hidden and sidebar closed after timeout`);
+  } else {
+    console.log(`Navigation highlights hidden after timeout`);
+  }
 }
 
 function showHighlights() {
@@ -151,13 +158,13 @@ export function moveFocus(dir) {
       if (col === 1) {
         // Leaving grid → go to sidebar
         const sidebarOptions = [
-          { id: "main", label: "Main" },
-          { id: "map", label: "Map" },
-          { id: "camera", label: "Camera" },
-          { id: "calendar", label: "Calendar" },
-          "---",
-          { id: "reload", label: "Reload Dashie" },
-          { id: "exit", label: "Exit Dashie" }
+          { id: "calendar", type: "main", label: "Calendar" },
+          { id: "map", type: "main", label: "Location Map" },
+          { id: "camera", type: "main", label: "Camera Feed" },
+          { id: "reload", type: "system", label: "Reload" },
+          { id: "sleep", type: "system", label: "Sleep" },
+          { id: "settings", type: "system", label: "Settings" },
+          { id: "exit", type: "system", label: "Exit" }
         ];
         const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
         setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
@@ -185,6 +192,12 @@ export function moveFocus(dir) {
 
     console.log(`AFTER: ${dir} navigation to (${newRow},${newCol})`);
 
+    // Special handling for the main spanning widget (calendar at row 2-3, col 1)
+    // Always treat the spanning widget as position (2,1) regardless of which half is selected
+    if (newCol === 1 && (newRow === 2 || newRow === 3)) {
+      newRow = 2; // Always use the top position of the spanning widget
+    }
+
     // Always update focus to maintain highlighting
     setFocus({ type: "grid", row: newRow, col: newCol });
     
@@ -195,27 +208,23 @@ export function moveFocus(dir) {
 
   if (state.focus.type === "menu") {
     const sidebarOptions = [
-      { id: "main", label: "Main" },
-      { id: "map", label: "Map" },
-      { id: "camera", label: "Camera" },
-      { id: "calendar", label: "Calendar" },
-      "---",
-      { id: "reload", label: "Reload Dashie" },
-      { id: "exit", label: "Exit Dashie" }
+      { id: "calendar", type: "main", label: "Calendar" },
+      { id: "map", type: "main", label: "Location Map" },
+      { id: "camera", type: "main", label: "Camera Feed" },
+      { id: "reload", type: "system", label: "Reload" },
+      { id: "sleep", type: "system", label: "Sleep" },
+      { id: "settings", type: "system", label: "Settings" },
+      { id: "exit", type: "system", label: "Exit" }
     ];
 
     let { index } = state.focus;
 
     if (dir === "up") {
-      do {
-        index = (index - 1 + sidebarOptions.length) % sidebarOptions.length;
-      } while (sidebarOptions[index] === "---");
+      index = Math.max(0, index - 1);
     }
 
     if (dir === "down") {
-      do {
-        index = (index + 1) % sidebarOptions.length;
-      } while (sidebarOptions[index] === "---");
+      index = Math.min(sidebarOptions.length - 1, index + 1);
     }
 
     if (dir === "right") {
@@ -264,13 +273,13 @@ export function handleEnter() {
 
   if (state.focus.type === "menu") {
     const sidebarOptions = [
-      { id: "main", label: "Main" },
-      { id: "map", label: "Map" },
-      { id: "camera", label: "Camera" },
-      { id: "calendar", label: "Calendar" },
-      "---",
-      { id: "reload", label: "Reload Dashie" },
-      { id: "exit", label: "Exit Dashie" }
+      { id: "calendar", type: "main", label: "Calendar" },
+      { id: "map", type: "main", label: "Location Map" },
+      { id: "camera", type: "main", label: "Camera Feed" },
+      { id: "reload", type: "system", label: "Reload" },
+      { id: "sleep", type: "system", label: "Sleep" },
+      { id: "settings", type: "system", label: "Settings" },
+      { id: "exit", type: "system", label: "Exit" }
     ];
 
     const selectedOption = sidebarOptions[state.focus.index];
@@ -296,20 +305,38 @@ export function handleBack() {
 }
 
 function handleMenuSelection(optionId) {
+  console.log(`Menu selection: ${optionId}`);
+  
   switch(optionId) {
-    case "main":
+    case "calendar":
     case "map":
     case "camera":
-    case "calendar":
       setCurrentMain(optionId);
       setFocus({ type: "grid", row: 2, col: 1 });
+      // Close sidebar after selection
+      elements.sidebar.classList.remove("expanded");
       updateFocus();
       break;
     case "reload":
       window.location.reload();
       break;
+    case "sleep":
+      // Import and trigger sleep mode
+      import('../ui/modals.js').then(({ goToSleep }) => {
+        goToSleep();
+      });
+      break;
+    case "settings":
+      // Import and open settings
+      import('../ui/settings.js').then(({ openSettings }) => {
+        openSettings();
+      });
+      break;
     case "exit":
-      // Handle exit confirmation - you'll need to implement this
+      // Import and show exit confirmation
+      import('../ui/modals.js').then(({ showExitConfirmation }) => {
+        showExitConfirmation();
+      });
       break;
   }
 }
@@ -319,13 +346,13 @@ export function openMenuWithCurrentSelection() {
   if (state.isAsleep || state.confirmDialog || state.selectedCell) return; // Don't open menu if widget is focused
   
   const sidebarOptions = [
-    { id: "main", label: "Main" },
-    { id: "map", label: "Map" },
-    { id: "camera", label: "Camera" },
-    { id: "calendar", label: "Calendar" },
-    "---",
-    { id: "reload", label: "Reload Dashie" },
-    { id: "exit", label: "Exit Dashie" }
+    { id: "calendar", type: "main", label: "Calendar" },
+    { id: "map", type: "main", label: "Location Map" },
+    { id: "camera", type: "main", label: "Camera Feed" },
+    { id: "reload", type: "system", label: "Reload" },
+    { id: "sleep", type: "system", label: "Sleep" },
+    { id: "settings", type: "system", label: "Settings" },
+    { id: "exit", type: "system", label: "Exit" }
   ];
   
   // Find the index of the currently active main widget
