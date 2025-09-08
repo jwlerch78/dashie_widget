@@ -1,6 +1,54 @@
-// js/core/navigation.js - Navigation Logic & Focus Management
+// js/core/navigation.js - Navigation Logic & Focus Management with Timeout System
 
 import { state, elements, findWidget, setFocus, setSelectedCell, setCurrentMain } from './state.js';
+
+// ---------------------
+// TIMEOUT MANAGEMENT
+// ---------------------
+
+let highlightTimer = null;
+let isHighlightVisible = true;
+
+const TIMEOUT_SELECTION = 20000; // 20 seconds for selection mode
+const TIMEOUT_FOCUS = 60000;     // 60 seconds for focus mode
+
+function startHighlightTimer() {
+  clearHighlightTimer();
+  
+  const timeout = state.selectedCell ? TIMEOUT_FOCUS : TIMEOUT_SELECTION;
+  
+  highlightTimer = setTimeout(() => {
+    hideHighlights();
+  }, timeout);
+}
+
+function clearHighlightTimer() {
+  if (highlightTimer) {
+    clearTimeout(highlightTimer);
+    highlightTimer = null;
+  }
+}
+
+function hideHighlights() {
+  isHighlightVisible = false;
+  document.body.classList.add('highlights-hidden');
+  console.log(`Navigation highlights hidden after timeout`);
+}
+
+function showHighlights() {
+  isHighlightVisible = true;
+  document.body.classList.remove('highlights-hidden');
+  startHighlightTimer();
+  console.log(`Navigation highlights shown, timer started`);
+}
+
+function resetHighlightTimer() {
+  if (!isHighlightVisible) {
+    showHighlights();
+  } else {
+    startHighlightTimer();
+  }
+}
 
 // ---------------------
 // FOCUS MANAGEMENT
@@ -36,6 +84,9 @@ export function updateFocus() {
   if (state.selectedCell) {
     state.selectedCell.classList.add("focused");
   }
+
+  // Reset highlight timer when focus changes
+  resetHighlightTimer();
 }
 
 // ---------------------
@@ -60,6 +111,9 @@ export function sendToWidget(action) {
   } else {
     console.log(`No iframe found in selected cell for action: ${action}`);
   }
+  
+  // Reset timer when sending commands to widgets
+  resetHighlightTimer();
 }
 
 // ---------------------
@@ -68,6 +122,9 @@ export function sendToWidget(action) {
 
 export function moveFocus(dir) {
   if (state.isAsleep || state.confirmDialog) return; // Don't move focus when asleep or in modal
+  
+  // Reset timer on any navigation input
+  resetHighlightTimer();
   
   if (state.selectedCell) {
     // Widget is focused — send input there
@@ -83,146 +140,135 @@ export function moveFocus(dir) {
         // Leaving grid → go to sidebar
         const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
         setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
-        updateFocus();
         return;
       }
-      col--;
+      col = Math.max(1, col - 1);
     }
+
     if (dir === "right") {
-      if (col < 2) col++;
+      if (col === 2) return; // Can't go further right
+      col = Math.min(2, col + 1);
     }
-    if (dir === "up") row--;
-    if (dir === "down") row++;
 
-    // Clamp to valid cells
-    if (row < 1) row = 1;
-    if (row > 3) row = 3;
-    if (col < 1) col = 1;
-    if (col > 2) col = 2;
+    if (dir === "up") {
+      row = Math.max(1, row - 1);
+    }
 
-    // Snap into main widget if moving in its area
-    if (col === 1 && (row === 2 || row === 3)) {
-      setFocus({ type: "grid", row: 2, col: 1 }); // main widget cell
-    } else if (findWidget(row, col)) {
-      setFocus({ type: "grid", row, col });
+    if (dir === "down") {
+      row = Math.min(3, row + 1);
     }
-  } else if (state.focus.type === "menu") {
-    const totalItems = sidebarOptions.length;
 
-    if (dir === "up" && state.focus.index > 0) {
-      setFocus({ ...state.focus, index: state.focus.index - 1 });
-    }
-    if (dir === "down" && state.focus.index < totalItems - 1) {
-      setFocus({ ...state.focus, index: state.focus.index + 1 });
-    }
-    if (dir === "right") {
-      // Leaving sidebar back into grid, start at top-left (map)
-      setFocus({ type: "grid", row: 1, col: 1 });
-      elements.sidebar.classList.remove("expanded");
-    }
+    setFocus({ type: "grid", row, col });
   }
 
-  updateFocus();
-}
-
-// ---------------------
-// ACTION HANDLERS
-// ---------------------
-
-export function handleEnter() {
-  if (state.isAsleep) {
-    // Import and call wakeUp, then start resleep timer
-    import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
-    import('../ui/settings.js').then(({ startResleepTimer }) => startResleepTimer());
-    return;
-  }
-  
-  if (state.confirmDialog) {
-    // Import and call handleExitChoice
-    import('../ui/modals.js').then(({ handleExitChoice }) => {
-      handleExitChoice(state.confirmDialog.selectedButton);
-    });
-    return;
-  }
-  
-  // If widget is focused, send Enter to widget instead of toggling focus
-  if (state.selectedCell) {
-    sendToWidget("enter");
-    return;
-  }
-  
-  if (state.focus.type === "grid") {
-    const el = document.querySelector(
-      `.widget[data-row="${state.focus.row}"][data-col="${state.focus.col}"]`
-    );
-    setSelectedCell(el);
-    console.log("🔒 Widget focused - commands will be forwarded to iframe");
-  } else if (state.focus.type === "menu") {
-    const menuItems = elements.sidebar.querySelectorAll(".menu-item");
-    const menuItem = menuItems[state.focus.index];
-    const menuKey = menuItem?.dataset?.menu;
-
-    if (menuKey === "sleep") {
-      import('../ui/modals.js').then(({ enterSleepMode }) => enterSleepMode());
-    } else if (menuKey === "settings") {
-      import('../ui/settings.js').then(({ showSettings }) => showSettings());
-    } else if (menuKey === "reload") {
-      location.reload();
-    } else if (menuKey === "exit") {
-      import('../ui/modals.js').then(({ showExitConfirmation }) => showExitConfirmation());
-    } else if (menuKey) {
-      // Main content items - import grid functions
-      setCurrentMain(menuKey);
-      import('../ui/grid.js').then(({ renderGrid, renderSidebar }) => {
-        renderGrid();
-        renderSidebar();
-        console.log(`📱 Switched main widget to: ${menuKey}`);
-      });
-    }
-  } else {
-    // If Enter pressed while not in menu, close expanded sidebar
-    if (elements.sidebar.classList.contains("expanded")) {
-      elements.sidebar.classList.remove("expanded");
-      setFocus({ type: "grid", row: 1, col: 1 });
-      console.log("📤 Sidebar closed via Enter key");
-    }
-  }
-  updateFocus();
-}
-
-export function handleBack() {
-  if (state.isAsleep) {
-    import('../ui/modals.js').then(({ wakeUp }) => wakeUp());
-    return;
-  }
-  
-  if (state.confirmDialog) {
-    import('../ui/modals.js').then(({ handleExitChoice }) => {
-      handleExitChoice("no"); // Default to "no" when pressing back
-    });
-    return;
-  }
-  
   if (state.focus.type === "menu") {
-    // If in menu, collapse it and return to grid (map in top-left)
-    elements.sidebar.classList.remove("expanded");
-    setFocus({ type: "grid", row: 1, col: 1 });
-  } else {
-    // If widget is focused, unfocus it
-    if (state.selectedCell) {
-      setSelectedCell(null);
-      console.log("🔓 Widget unfocused via back button");
+    const sidebarOptions = [
+      { id: "main", label: "Main" },
+      { id: "map", label: "Map" },
+      { id: "camera", label: "Camera" },
+      { id: "calendar", label: "Calendar" },
+      "---",
+      { id: "reload", label: "Reload Dashie" },
+      { id: "exit", label: "Exit Dashie" }
+    ];
+
+    let { index } = state.focus;
+
+    if (dir === "up") {
+      do {
+        index = (index - 1 + sidebarOptions.length) % sidebarOptions.length;
+      } while (sidebarOptions[index] === "---");
     }
+
+    if (dir === "down") {
+      do {
+        index = (index + 1) % sidebarOptions.length;
+      } while (sidebarOptions[index] === "---");
+    }
+
+    if (dir === "right") {
+      // Leave sidebar → go to grid
+      setFocus({ type: "grid", row: 2, col: 1 });
+      return;
+    }
+
+    setFocus({ type: "menu", index });
   }
+
   updateFocus();
 }
 
-export function openMenuWithCurrentSelection() {
-  if (state.isAsleep || state.confirmDialog || state.selectedCell) return; // Don't open menu if widget is focused
+// Handle Enter key for selection
+export function handleEnter() {
+  // Reset timer on Enter
+  resetHighlightTimer();
   
-  // Find the index of the currently active main widget
-  const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
-  setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
-  elements.sidebar.classList.add("expanded");
-  updateFocus();
+  if (state.isAsleep || state.confirmDialog) return;
+
+  if (state.focus.type === "grid") {
+    const widget = findWidget(state.focus.row, state.focus.col);
+    if (widget) {
+      setSelectedCell(widget);
+      updateFocus();
+    }
+  }
+
+  if (state.focus.type === "menu") {
+    const sidebarOptions = [
+      { id: "main", label: "Main" },
+      { id: "map", label: "Map" },
+      { id: "camera", label: "Camera" },
+      { id: "calendar", label: "Calendar" },
+      "---",
+      { id: "reload", label: "Reload Dashie" },
+      { id: "exit", label: "Exit Dashie" }
+    ];
+
+    const selectedOption = sidebarOptions[state.focus.index];
+    if (selectedOption && selectedOption.id) {
+      handleMenuSelection(selectedOption.id);
+    }
+  }
+}
+
+// Handle Escape/Back key
+export function handleEscape() {
+  if (state.isAsleep || state.confirmDialog) return;
+
+  if (state.selectedCell) {
+    // Exit focus mode and hide highlights
+    setSelectedCell(null);
+    hideHighlights();
+    updateFocus();
+  } else if (state.focus.type === "grid" || state.focus.type === "menu") {
+    // Just hide highlights if we're in selection mode
+    hideHighlights();
+  }
+}
+
+function handleMenuSelection(optionId) {
+  switch(optionId) {
+    case "main":
+    case "map":
+    case "camera":
+    case "calendar":
+      setCurrentMain(optionId);
+      setFocus({ type: "grid", row: 2, col: 1 });
+      updateFocus();
+      break;
+    case "reload":
+      window.location.reload();
+      break;
+    case "exit":
+      // Handle exit confirmation
+      break;
+  }
+}
+
+// Initialize highlight system
+export function initializeHighlightTimeout() {
+  // Start the timer when the app loads
+  showHighlights();
+  
+  console.log("Navigation highlight timeout system initialized");
 }
