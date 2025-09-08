@@ -1,9 +1,9 @@
-/* css/components/sidebar.css - Sidebar Menu Styles */
+/* css/components/sidebar.css - Sidebar Menu Styles with Theme Support */
 
 /* Sidebar menu */
 /* Base collapsed sidebar — part of flex layout */
 #sidebar {
-  position: absolute;        /* always absolute */
+  position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
@@ -11,8 +11,8 @@
   background: var(--bg-primary);
   display: flex;
   flex-direction: column;
-  align-items: center;       /* icons horizontally centered */
-  justify-content: flex-start; /* align to top instead of center */
+  align-items: center;
+  justify-content: flex-start;
   padding: 10px 0;
   transition: width var(--transition-medium), background var(--transition-medium);
   z-index: var(--z-sidebar);
@@ -20,22 +20,22 @@
 
 #sidebar-wrapper {
   width: var(--sidebar-width-collapsed);
-  position: relative;    /* keep sidebar inside */
+  position: relative;
 }
 
 #sidebar.expanded {
   width: var(--sidebar-width-expanded);
-  background: var(--bg-primary); /* solid base */
+  background: var(--bg-primary);
   background: linear-gradient(
     to right,
     var(--bg-primary) 0%,
     var(--bg-primary) 40%,
     var(--bg-primary-semi-transparent) 100%
   );
-    z-index: var( --z-sidebar-expanded);
+  z-index: var(--z-sidebar-expanded);
 }
 
-/* Dashie logo at top - always takes up space */
+/* Dashie logo at top - now uses theme variable */
 .dashie-logo {
   width: 100px;
   height: auto;
@@ -43,13 +43,14 @@
   opacity: 0;
   object-fit: contain;
   transition: opacity var(--transition-medium);
+  /* Remove the src attribute from CSS - will be set dynamically by JavaScript */
 }
 
 #sidebar.expanded .dashie-logo {
   opacity: 1;
 }
 
-/* Base menu item styling - ADD for mouse interaction */
+/* Base menu item styling */
 .menu-item {
   cursor: pointer;
   pointer-events: auto;
@@ -60,13 +61,13 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;    /* Changed from flex-start to center */
+  justify-content: center;
   margin: 4px 0;
-  padding: 6px 0;             /* Changed from 6px 12px to 6px 0 for better centering */
-  border-radius: 0;           /* remove rounded corners */
-  width: 100%;                /* always full width */
-  height: 40px;               /* consistent size */
-  box-sizing: border-box;     /* include padding in width */
+  padding: 6px 0;
+  border-radius: 0;
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
@@ -74,9 +75,9 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: invert(100%);
+  filter: var(--sidebar-icon-filter); /* Use theme variable for icon color */
   flex-shrink: 0;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), filter var(--transition-fast);
 }
 
 /* System function items (smaller, in mini-grid) */
@@ -84,12 +85,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;    /* Changed from flex-start to center */
-  margin: 1px;                /* Reduced margin for tighter spacing */
-  padding: 2px;               /* Reduced padding */
+  justify-content: center;
+  margin: 1px;
+  padding: 2px;
   border-radius: 0;
   width: 100%;
-  height: 20px;               /* Reduced height for tighter grid */
+  height: 20px;
   box-sizing: border-box;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
@@ -98,9 +99,9 @@
   width: 14px;
   height: 14px;
   object-fit: contain;
-  filter: invert(100%);
+  filter: var(--sidebar-icon-filter); /* Use theme variable for icon color */
   flex-shrink: 0;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), filter var(--transition-fast);
 }
 
 /* Container for system functions mini-grid */
@@ -108,12 +109,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 2px;                   /* Reduced gap for tighter spacing */
+  gap: 2px;
   margin-top: auto;
   margin-bottom: 20px;
-  margin-left: 5px;           /* Reduced side margins */
+  margin-left: 5px;
   margin-right: 5px;
-  width: 50px;                /* Increased width to accommodate both columns properly */
+  width: 50px;
   height: 44px;
   justify-content: center;
 }
@@ -131,7 +132,7 @@
 /* Main items keep same margins when expanded */
 #sidebar.expanded .menu-item.main {
   margin: 8px 0;
-  padding: 8px 12px;          /* Restore padding when expanded */
+  padding: 8px 12px;
 }
 
 /* Main icons keep same size when expanded */
@@ -164,7 +165,7 @@
   margin: 0;
   padding: 4px 8px;
   line-height: 1.2;
-  justify-content: flex-start; /* Return to left alignment when expanded */
+  justify-content: flex-start;
 }
 
 /* Label that appears only in expanded mode */
@@ -177,20 +178,20 @@
   font-size: var(--font-size-small);
   white-space: nowrap;
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast), color var(--transition-fast);
   pointer-events: none;
 }
 
-/* Show label when sidebar is expanded - UPDATED for mouse interaction */
+/* Show label when sidebar is expanded */
 #sidebar.expanded .menu-item span.menu-label {
   opacity: 1;
   position: static;
   transform: none;
   margin-left: 10px;
-  pointer-events: auto; /* Allow clicks when visible */
-  cursor: pointer; /* Show cursor on text */
-  flex: 1; /* ADD THIS - makes label take up remaining space */
-  min-width: 0; /* ADD THIS - allows text to shrink if needed */
+  pointer-events: auto;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Separator line between main and system functions */
@@ -200,4 +201,5 @@
   background: var(--text-muted);
   margin: 15px 0;
   flex-shrink: 0;
+  transition: background var(--transition-fast);
 }
