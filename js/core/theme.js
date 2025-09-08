@@ -1,4 +1,4 @@
-// js/core/theme.js - Theme Management System
+// js/core/theme.js - Simplified Theme Management System
 
 // ---------------------
 // THEME CONSTANTS
@@ -29,83 +29,39 @@ export const THEME_CONFIG = {
 let currentTheme = THEMES.DARK; // Default theme
 
 // ---------------------
-// CSS INJECTION FOR WIDGETS
+// WIDGET THEME APPLICATION
 // ---------------------
-
-const WIDGET_THEME_CSS = {
-  dark: `
-    :root {
-      --bg-primary: #222 !important;
-      --bg-secondary: #333 !important;
-      --bg-tertiary: #444 !important;
-      --text-primary: #fff !important;
-      --text-secondary: #ccc !important;
-      --text-muted: #999 !important;
-      --accent-orange: #ffaa00 !important;
-      --accent-blue: #00aaff !important;
-      --bg-button: #666 !important;
-      --bg-active: rgba(255, 255, 255, 0.2) !important;
-      --grid-gap-color: #333 !important;
-    }
-  `,
-  light: `
-    :root {
-      --bg-primary: #e3f2fd !important;
-      --bg-secondary: #f5f5f5 !important;
-      --bg-tertiary: #eeeeee !important;
-      --text-primary: #424242 !important;
-      --text-secondary: #616161 !important;
-      --text-muted: #9e9e9e !important;
-      --accent-orange: #ff9800 !important;
-      --accent-blue: #2196f3 !important;
-      --bg-button: #90a4ae !important;
-      --bg-active: rgba(33, 150, 243, 0.2) !important;
-      --grid-gap-color: #e0e0e0 !important;
-    }
-  `
-};
 
 function canAccessIframe(iframe) {
   try {
-    // Test if we can access the iframe document
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     return doc !== null && doc !== undefined;
   } catch (error) {
-    return false; // Cross-origin or restricted
+    return false;
   }
 }
 
-function injectCSSIntoWidget(iframe, theme) {
+function applyThemeClassToWidget(iframe, theme) {
   try {
     const doc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!doc) {
-      console.warn('Cannot access iframe document for CSS injection');
+    if (!doc || !doc.body) {
+      console.warn('Cannot access iframe body for theme application');
       return false;
     }
 
-    // Remove existing theme styles
-    const existingStyle = doc.getElementById('injected-theme-style');
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-
-    // Create and inject new theme style
-    const style = doc.createElement('style');
-    style.id = 'injected-theme-style';
-    style.textContent = WIDGET_THEME_CSS[theme] || WIDGET_THEME_CSS.dark;
+    // Remove all existing theme classes
+    Object.values(THEMES).forEach(t => {
+      doc.body.classList.remove(`theme-${t}`);
+    });
     
-    // Ensure head exists before appending
-    if (!doc.head) {
-      console.warn('Widget document has no head element');
-      return false;
-    }
+    // Add new theme class (CSS variables will handle the rest)
+    doc.body.classList.add(`theme-${theme}`);
     
-    doc.head.appendChild(style);
-    console.log(`✅ CSS injection successful for ${theme} theme`);
+    console.log(`✅ Applied theme-${theme} class to widget`);
     return true;
 
   } catch (error) {
-    console.warn('CSS injection failed:', error.message);
+    console.warn('Theme class application failed:', error.message);
     return false;
   }
 }
@@ -117,7 +73,7 @@ function sendThemeViaPostMessage(iframe, theme) {
     iframe.contentWindow.postMessage({
       type: 'theme-change',
       theme: theme,
-      themeCSS: WIDGET_THEME_CSS[theme],
+      themeClass: `theme-${theme}`,
       themeConfig: THEME_CONFIG[theme]
     }, '*');
     console.log(`📤 Sent ${theme} theme via postMessage`);
@@ -139,7 +95,7 @@ function loadSavedTheme() {
   } catch (e) {
     console.warn('Failed to load saved theme:', e);
   }
-  return THEMES.DARK; // Default fallback
+  return THEMES.DARK;
 }
 
 function saveTheme(theme) {
@@ -178,10 +134,7 @@ function applyThemeToBody(theme) {
 }
 
 function preventTransitionsOnLoad() {
-  // Prevent transitions during initial load
   document.body.classList.add('no-transitions');
-  
-  // Re-enable transitions after a brief delay
   setTimeout(() => {
     document.body.classList.remove('no-transitions');
   }, 100);
@@ -193,39 +146,36 @@ function preventTransitionsOnLoad() {
 
 function notifyWidgetsThemeChange(theme) {
   const iframes = document.querySelectorAll('.widget-iframe');
-  let cssInjectionCount = 0;
+  let classApplicationCount = 0;
   let postMessageCount = 0;
   
   iframes.forEach((iframe, index) => {
     console.log(`🎨 Applying ${theme} theme to widget ${index + 1}/${iframes.length}`);
     
-    // Method 1: Try direct CSS injection first (faster, no widget code needed)
+    // Method 1: Try direct CSS class application (uses your CSS variables)
     if (canAccessIframe(iframe)) {
-      const success = injectCSSIntoWidget(iframe, theme);
+      const success = applyThemeClassToWidget(iframe, theme);
       if (success) {
-        cssInjectionCount++;
-        return; // CSS injection worked, no need for postMessage
+        classApplicationCount++;
+        return;
       }
     }
     
-    // Method 2: Fallback to postMessage (requires widget to listen)
+    // Method 2: Fallback to postMessage
     sendThemeViaPostMessage(iframe, theme);
     postMessageCount++;
   });
   
-  console.log(`🎨 Theme applied: ${cssInjectionCount} via CSS injection, ${postMessageCount} via postMessage`);
+  console.log(`🎨 Theme applied: ${classApplicationCount} via CSS class, ${postMessageCount} via postMessage`);
 }
 
 function handleWidgetThemeRequest(widgetName) {
-  // When widget requests theme, apply current theme immediately
   const iframes = document.querySelectorAll('.widget-iframe');
   
   iframes.forEach(iframe => {
-    // Try CSS injection first
     if (canAccessIframe(iframe)) {
-      injectCSSIntoWidget(iframe, currentTheme);
+      applyThemeClassToWidget(iframe, currentTheme);
     } else {
-      // Fallback to postMessage
       sendThemeViaPostMessage(iframe, currentTheme);
     }
   });
@@ -233,7 +183,6 @@ function handleWidgetThemeRequest(widgetName) {
   console.log(`📡 Sent current theme (${currentTheme}) to requesting widget: ${widgetName}`);
 }
 
-// Listen for widget theme requests (optional fallback)
 function initializeWidgetCommunication() {
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'widget-request-theme') {
@@ -242,12 +191,10 @@ function initializeWidgetCommunication() {
   });
 }
 
-// Apply theme to widgets when they load
 function applyThemeToNewWidget(iframe) {
-  // Wait a moment for widget to fully load
   setTimeout(() => {
     if (canAccessIframe(iframe)) {
-      injectCSSIntoWidget(iframe, currentTheme);
+      applyThemeClassToWidget(iframe, currentTheme);
       console.log(`🎨 Applied ${currentTheme} theme to newly loaded widget`);
     } else {
       sendThemeViaPostMessage(iframe, currentTheme);
@@ -295,29 +242,24 @@ export function switchTheme(newTheme) {
 export function initializeThemeSystem() {
   console.log('🎨 Initializing theme system...');
   
-  // Prevent transitions during initial setup
   preventTransitionsOnLoad();
   
-  // Load saved theme
   currentTheme = loadSavedTheme();
   console.log(`📖 Loaded theme: ${currentTheme}`);
   
-  // Apply initial theme
   applyThemeToBody(currentTheme);
   updateLogo(currentTheme);
   
-  // Initialize widget communication (fallback)
   initializeWidgetCommunication();
   
   // Apply theme to any existing widgets
   setTimeout(() => {
     notifyWidgetsThemeChange(currentTheme);
-  }, 500); // Give widgets time to load
+  }, 500);
   
   console.log(`✅ Theme system initialized with ${THEME_CONFIG[currentTheme].name}`);
 }
 
-// Export function to apply theme to newly loaded widgets
 export function applyThemeToWidget(iframe) {
   applyThemeToNewWidget(iframe);
 }
