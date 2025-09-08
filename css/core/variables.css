@@ -38,8 +38,8 @@
   --sidebar-width-collapsed: 60px;
   --sidebar-width-expanded: 200px;
   --grid-gap: 4px;
-  --border-radius: 12px;
-  --border-radius-small: 8px;
+  --border-radius: 20px;
+  --border-radius-small: 16px;
   
   /* Typography */
   --font-size-base: 16px;
