@@ -9,7 +9,9 @@ import { state, setConfirmDialog } from '../core/state.js';
 export const settings = {
   sleepTime: { hour: 21, minute: 30 }, // 9:30 PM
   wakeTime: { hour: 6, minute: 30 },   // 6:30 AM
-  resleepDelay: 15 // minutes
+  resleepDelay: 15, // minutes
+  photoTransitionTime: 15, // seconds
+  redirectUrl: 'https://jwlerch78.github.io/dashie/' // default URL
 };
 
 let settingsModal = null;
@@ -17,6 +19,7 @@ let settingsFocus = { type: 'close', index: 0 };
 let sleepTimer = null;
 let resleepTimer = null;
 let checkInterval = null;
+let expandedSections = new Set(['sleep']); // Track which sections are expanded
 
 // ---------------------
 // SETTINGS PERSISTENCE
@@ -128,6 +131,36 @@ export function cancelResleepTimer() {
 }
 
 // ---------------------
+// SECTION MANAGEMENT
+// ---------------------
+
+function toggleSection(sectionId) {
+  if (expandedSections.has(sectionId)) {
+    expandedSections.delete(sectionId);
+  } else {
+    expandedSections.add(sectionId);
+  }
+  updateSectionVisibility();
+}
+
+function updateSectionVisibility() {
+  const sections = ['sleep', 'testing', 'photos'];
+  
+  sections.forEach(sectionId => {
+    const content = settingsModal.querySelector(`#${sectionId}-content`);
+    const arrow = settingsModal.querySelector(`#${sectionId}-arrow`);
+    
+    if (expandedSections.has(sectionId)) {
+      content.style.display = 'block';
+      arrow.textContent = '▼';
+    } else {
+      content.style.display = 'none';
+      arrow.textContent = '▶';
+    }
+  });
+}
+
+// ---------------------
 // SETTINGS MODAL
 // ---------------------
 
@@ -144,36 +177,90 @@ export function showSettings() {
         <button class="settings-close" id="settings-close">Close</button>
       </div>
       <div class="settings-content">
+        
+        <!-- Sleep Section -->
         <div class="settings-section">
-          <h3>Sleep Schedule</h3>
-          
-          <div class="settings-row">
-            <div class="settings-label">Sleep Time:</div>
-            <div class="settings-control">
-              <input type="number" class="time-input" id="sleep-hour" min="1" max="12" value="${settings.sleepTime.hour > 12 ? settings.sleepTime.hour - 12 : settings.sleepTime.hour === 0 ? 12 : settings.sleepTime.hour}">
-              <span class="time-separator">:</span>
-              <input type="number" class="time-input" id="sleep-minute" min="0" max="59" value="${settings.sleepTime.minute.toString().padStart(2, '0')}">
-              <button class="time-period" id="sleep-period">${settings.sleepTime.hour >= 12 ? 'PM' : 'AM'}</button>
+          <h3 class="section-header" data-section="sleep">
+            <span id="sleep-arrow">▼</span> Sleep
+          </h3>
+          <div id="sleep-content" class="section-content">
+            <div class="settings-row compact">
+              <div class="settings-label">Sleep Time:</div>
+              <div class="settings-control">
+                <input type="number" class="time-input" id="sleep-hour" min="1" max="12" value="${settings.sleepTime.hour > 12 ? settings.sleepTime.hour - 12 : settings.sleepTime.hour === 0 ? 12 : settings.sleepTime.hour}">
+                <span class="time-separator">:</span>
+                <input type="number" class="time-input" id="sleep-minute" min="0" max="59" value="${settings.sleepTime.minute.toString().padStart(2, '0')}">
+                <button class="time-period" id="sleep-period">${settings.sleepTime.hour >= 12 ? 'PM' : 'AM'}</button>
+              </div>
             </div>
-          </div>
-          
-          <div class="settings-row">
-            <div class="settings-label">Wake Time:</div>
-            <div class="settings-control">
-              <input type="number" class="time-input" id="wake-hour" min="1" max="12" value="${settings.wakeTime.hour > 12 ? settings.wakeTime.hour - 12 : settings.wakeTime.hour === 0 ? 12 : settings.wakeTime.hour}">
-              <span class="time-separator">:</span>
-              <input type="number" class="time-input" id="wake-minute" min="0" max="59" value="${settings.wakeTime.minute.toString().padStart(2, '0')}">
-              <button class="time-period" id="wake-period">${settings.wakeTime.hour >= 12 ? 'PM' : 'AM'}</button>
+            
+            <div class="settings-row compact">
+              <div class="settings-label">Wake Time:</div>
+              <div class="settings-control">
+                <input type="number" class="time-input" id="wake-hour" min="1" max="12" value="${settings.wakeTime.hour > 12 ? settings.wakeTime.hour - 12 : settings.wakeTime.hour === 0 ? 12 : settings.wakeTime.hour}">
+                <span class="time-separator">:</span>
+                <input type="number" class="time-input" id="wake-minute" min="0" max="59" value="${settings.wakeTime.minute.toString().padStart(2, '0')}">
+                <button class="time-period" id="wake-period">${settings.wakeTime.hour >= 12 ? 'PM' : 'AM'}</button>
+              </div>
             </div>
-          </div>
-          
-          <div class="settings-row">
-            <div class="settings-label">Re-sleep Delay (minutes):</div>
-            <div class="settings-control">
-              <input type="number" class="number-input" id="resleep-delay" min="1" max="120" value="${settings.resleepDelay}">
+            
+            <div class="settings-row compact">
+              <div class="settings-label">Re-sleep Delay (minutes):</div>
+              <div class="settings-control">
+                <input type="number" class="number-input" id="resleep-delay" min="1" max="120" value="${settings.resleepDelay}">
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Testing Section -->
+        <div class="settings-section">
+          <h3 class="section-header" data-section="testing">
+            <span id="testing-arrow">▶</span> Testing
+          </h3>
+          <div id="testing-content" class="section-content" style="display: none;">
+            <div class="settings-row compact">
+              <div class="settings-label">Redirect URL:</div>
+              <div class="settings-control">
+                <select class="url-select" id="redirect-url">
+                  <option value="https://jwlerch78.github.io/dashie/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie/' ? 'selected' : ''}>Main (dashie)</option>
+                  <option value="https://jwlerch78.github.io/dashie_staging/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie_staging/' ? 'selected' : ''}>Staging</option>
+                  <option value="https://jwlerch78.github.io/dashie_widget/" ${settings.redirectUrl === 'https://jwlerch78.github.io/dashie_widget/' ? 'selected' : ''}>Widget Test</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-row compact">
+              <div class="settings-label"></div>
+              <div class="settings-control">
+                <button class="settings-button" id="redirect-button">Redirect Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photo Widgets Section -->
+        <div class="settings-section">
+          <h3 class="section-header" data-section="photos">
+            <span id="photos-arrow">▶</span> Photo Widgets
+          </h3>
+          <div id="photos-content" class="section-content" style="display: none;">
+            <div class="settings-row compact">
+              <div class="settings-label">Select Album:</div>
+              <div class="settings-control">
+                <select class="album-select" id="photo-album" disabled>
+                  <option>Family Photos (Coming Soon)</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-row compact">
+              <div class="settings-label">Transition Time (seconds):</div>
+              <div class="settings-control">
+                <input type="number" class="number-input" id="photo-transition" min="5" max="120" value="${settings.photoTransitionTime}">
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="settings-footer">
         <button class="settings-button" id="settings-cancel">Cancel</button>
@@ -188,6 +275,9 @@ export function showSettings() {
   // Set initial focus
   settingsFocus = { type: 'close', index: 0 };
   updateSettingsFocus();
+  
+  // Update section visibility
+  updateSectionVisibility();
   
   // Add event listeners
   addSettingsEventListeners();
@@ -213,6 +303,24 @@ function addSettingsEventListeners() {
   // AM/PM toggles
   modal.querySelector('#sleep-period').addEventListener('click', () => togglePeriod('sleep-period'));
   modal.querySelector('#wake-period').addEventListener('click', () => togglePeriod('wake-period'));
+  
+  // Section headers for collapsing
+  modal.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      const sectionId = e.target.closest('.section-header').dataset.section;
+      toggleSection(sectionId);
+    });
+  });
+  
+  // Redirect button
+  modal.querySelector('#redirect-button').addEventListener('click', () => {
+    const selectedUrl = modal.querySelector('#redirect-url').value;
+    if (selectedUrl && selectedUrl !== window.location.href) {
+      settings.redirectUrl = selectedUrl;
+      saveSettings();
+      window.location.href = selectedUrl;
+    }
+  });
   
   // Input validation
   const inputs = modal.querySelectorAll('.time-input, .number-input');
@@ -287,8 +395,35 @@ function saveSettingsAndClose() {
   // Save resleep delay
   settings.resleepDelay = parseInt(modal.querySelector('#resleep-delay').value);
   
+  // Save redirect URL
+  settings.redirectUrl = modal.querySelector('#redirect-url').value;
+  
+  // Save photo transition time
+  settings.photoTransitionTime = parseInt(modal.querySelector('#photo-transition').value);
+  
+  // Update photo widget if it exists
+  updatePhotoWidget();
+  
   saveSettings();
   closeSettings();
+}
+
+function updatePhotoWidget() {
+  // Send message to photo widget to update transition time
+  const photoWidgets = document.querySelectorAll('iframe[src*="photos.html"]');
+  photoWidgets.forEach(iframe => {
+    if (iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'update-settings',
+          photoTransitionTime: settings.photoTransitionTime
+        }, '*');
+        console.log('📸 Updated photo widget transition time:', settings.photoTransitionTime);
+      } catch (error) {
+        console.warn('Failed to update photo widget:', error);
+      }
+    }
+  });
 }
 
 export function closeSettings() {
@@ -307,11 +442,11 @@ export function updateSettingsFocus() {
   if (!settingsModal) return;
   
   // Clear all highlights
-  settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button')
+  settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button, .section-header, .url-select, .album-select')
     .forEach(el => el.classList.remove('selected'));
   
   // Apply current focus
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button'));
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
   if (focusable[settingsFocus.index]) {
     focusable[settingsFocus.index].classList.add('selected');
   }
@@ -320,7 +455,7 @@ export function updateSettingsFocus() {
 export function moveSettingsFocus(direction) {
   if (!settingsModal) return;
   
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button'));
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
   
   if (direction === 'up' && settingsFocus.index > 0) {
     settingsFocus.index--;
@@ -338,17 +473,22 @@ export function moveSettingsFocus(direction) {
 export function handleSettingsEnter() {
   if (!settingsModal) return;
   
-  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .time-input, .number-input, .time-period, .settings-button'));
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'));
   const focused = focusable[settingsFocus.index];
   
   if (focused) {
-    if (focused.classList.contains('time-period')) {
+    if (focused.classList.contains('section-header')) {
+      const sectionId = focused.dataset.section;
+      toggleSection(sectionId);
+    } else if (focused.classList.contains('time-period')) {
       focused.click();
     } else if (focused.classList.contains('settings-button') || focused.classList.contains('settings-close')) {
       focused.click();
     } else if (focused.classList.contains('time-input') || focused.classList.contains('number-input')) {
       focused.focus();
       focused.select();
+    } else if (focused.classList.contains('url-select') || focused.classList.contains('album-select')) {
+      focused.focus();
     }
   }
 }
@@ -360,3 +500,6 @@ export function handleSettingsEnter() {
 export function isSettingsOpen() {
   return settingsModal !== null;
 }
+
+// Export settings for other modules
+export { settings };
