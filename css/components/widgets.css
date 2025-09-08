@@ -10,3 +10,8 @@
   color: var(--text-primary);
   overflow: hidden; /* ADD THIS - Ensures iframe content respects border radius */
 }
+
+/* Also ensure iframes inherit the border radius */
+.widget iframe {
+  border-radius: var(--border-radius); /* ADD THIS - Apply border radius to iframes */
+}
