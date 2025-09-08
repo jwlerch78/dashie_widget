@@ -50,7 +50,7 @@
   /* Layout & Spacing */
   --sidebar-width-collapsed: 60px;
   --sidebar-width-expanded: 200px;
-  --grid-gap: 6px;
+  --grid-gap: 10px;
   --grid-gap-color: #333;
   --border-radius: 8px;
   --border-radius-small: 4px;
