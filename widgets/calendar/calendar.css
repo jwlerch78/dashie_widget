@@ -1,6 +1,8 @@
-/* widgets/calendar/calendar.css - Calendar Widget Styles with proper theme variables */
+/* widgets/calendar/calendar.css - Calendar Widget Styles with proper theme inheritance */
 
-/* Don't redefine :root variables - inherit from parent theme */
+/* Import theme variables - this ensures we have the latest theme definitions */
+@import url('../../css/core/variables.css');
+
 html, body {
   height: 100%;
   margin: 0;
@@ -29,8 +31,8 @@ html, body {
 }
 
 .calendar-header {
-  background: var(--bg-secondary);
-  color: var(--text-primary) !important; /* Force override */
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
   padding: 10px 15px;
   display: flex;
   justify-content: space-between;
@@ -45,12 +47,12 @@ html, body {
 .calendar-title {
   font-weight: bold;
   font-size: 16px;
-  color: var(--text-primary) !important; /* Force the color */
+  color: var(--text-primary) !important;
 }
 
 .calendar-mode {
-  background: var(--bg-button);
-  color: var(--text-primary) !important; /* Force the color */
+  background: var(--bg-button) !important;
+  color: var(--text-primary) !important;
   padding: 4px 8px;
   border-radius: var(--border-radius-small);
   font-size: 12px;
@@ -90,24 +92,44 @@ html, body {
   z-index: 1000;
 }
 
-/* Toast UI Calendar Overrides */
+/* ===== TOAST UI CALENDAR THEME OVERRIDES ===== */
+
+/* Main calendar container - force theme colors */
 .toastui-calendar {
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   height: 100% !important;
 }
 
-.toastui-calendar-layout {
-  height: 100% !important;
+/* All calendar text should use theme colors */
+.toastui-calendar *,
+.toastui-calendar-layout *,
+.toastui-calendar-panel *,
+.toastui-calendar-week-view *,
+.toastui-calendar-month-view *,
+.toastui-calendar-daily-view * {
+  color: var(--text-primary) !important;
 }
 
+/* Calendar layout and panels */
+.toastui-calendar-layout {
+  height: 100% !important;
+  background: var(--bg-secondary) !important;
+}
+
+.toastui-calendar-panel {
+  background: var(--bg-secondary) !important;
+}
+
+/* View containers */
 .toastui-calendar-week-view,
 .toastui-calendar-month-view,
 .toastui-calendar-daily-view {
   height: 100% !important;
+  background: var(--bg-secondary) !important;
 }
 
-/* Hide title (has calendar icon) */
+/* Hide title headers that we don't need */
 .toastui-calendar-layout > .toastui-calendar-week-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
 .toastui-calendar-layout > .toastui-calendar-month-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header,
 .toastui-calendar-layout > .toastui-calendar-daily-view-layout > .toastui-calendar-panel > .toastui-calendar-panel-header {
@@ -125,53 +147,50 @@ html, body {
   visibility: hidden !important;
 }
 
-/* Adjust week view to use full height without all-day section */
+/* Time view adjustments */
 .toastui-calendar-week-view .toastui-calendar-time,
-.toastui-calendar-weekly-view .toastui-calendar-time {
-  height: 100% !important;
-}
-
-/* Ensure monthly view displays properly */
-.toastui-calendar-month-view .toastui-calendar-month-week-item {
-  height: auto !important;
-  min-height: 80px !important;
-}
-
-.toastui-calendar-month-view .toastui-calendar-month-week {
-  flex: 1 !important;
-}
-
-/* Make week/daily view scrollable */
-.toastui-calendar-week-view .toastui-calendar-time,
+.toastui-calendar-weekly-view .toastui-calendar-time,
 .toastui-calendar-daily-view .toastui-calendar-time {
   height: 100% !important;
-  overflow-y: auto !important;
+  background: var(--bg-secondary) !important;
 }
 
-.toastui-calendar-week-view .toastui-calendar-time-scroll-wrapper,
-.toastui-calendar-daily-view .toastui-calendar-time-scroll-wrapper {
-  height: 100% !important;
-  overflow-y: auto !important;
-}
-
-/* Calendar event styling with theme variables */
-.toastui-calendar-event-time .toastui-calendar-event-title,
-.toastui-calendar-event-allday .toastui-calendar-event-title {
-  color: var(--text-primary) !important;
-  font-weight: 500;
-}
-
-/* Day names styling - Use theme variables instead of hardcoded colors */
+/* Day names with theme colors */
 .toastui-calendar-week-view-day-names,
 .toastui-calendar-month-view-day-names {
-  background: var(--bg-secondary) !important;
+  background: var(--bg-primary) !important;
+}
+
+.toastui-calendar-week-view-day-names .toastui-calendar-day-name,
+.toastui-calendar-month-view-day-names .toastui-calendar-day-name {
   color: var(--text-primary) !important;
+  background: var(--bg-primary) !important;
   font-weight: 600;
 }
 
-/* Current time indicator */
-.toastui-calendar-timegrid-current-time {
-  background: #ff4444 !important;
+/* Time column styling */
+.toastui-calendar-time-hour,
+.toastui-calendar-time-hour-marker {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.toastui-calendar-time-hour-marker {
+  color: var(--text-muted) !important;
+}
+
+/* Main content areas */
+.toastui-calendar-time-date,
+.toastui-calendar-time-date-wrapper {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Grid lines and borders */
+.toastui-calendar-weekday,
+.toastui-calendar-month-date {
+  border-color: var(--text-muted) !important;
+  background: var(--bg-secondary) !important;
 }
 
 /* Today highlighting */
@@ -180,35 +199,43 @@ html, body {
   background-color: rgba(255, 170, 0, 0.1) !important;
 }
 
-/* Time grid styling */
-.toastui-calendar-time-hour-marker {
-  color: var(--text-muted) !important;
+/* Event styling */
+.toastui-calendar-event-time .toastui-calendar-event-title,
+.toastui-calendar-event-allday .toastui-calendar-event-title {
+  color: white !important; /* Events should be white text on colored backgrounds */
+  font-weight: 500;
 }
 
+/* Current time indicator */
+.toastui-calendar-timegrid-current-time {
+  background: #ff4444 !important;
+}
+
+/* Scrollable areas */
+.toastui-calendar-week-view .toastui-calendar-time-scroll-wrapper,
+.toastui-calendar-daily-view .toastui-calendar-time-scroll-wrapper {
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Month view specific */
+.toastui-calendar-month-view .toastui-calendar-month-week-item {
+  height: auto !important;
+  min-height: 80px !important;
+  background: var(--bg-secondary) !important;
+}
+
+.toastui-calendar-month-view .toastui-calendar-month-week {
+  flex: 1 !important;
+}
+
+/* Month date numbers */
+.toastui-calendar-month-date .toastui-calendar-month-date-number {
+  color: var(--text-primary) !important;
+}
+
+/* Timezone display */
 .toastui-calendar-timegrid-timezone {
   color: var(--text-primary) !important;
-}
-
-/* Grid lines and borders - use theme colors */
-.toastui-calendar-weekday,
-.toastui-calendar-month-date {
-  border-color: var(--text-muted) !important;
-}
-
-/* Time column background */
-.toastui-calendar-time-hour,
-.toastui-calendar-time-hour-marker {
   background: var(--bg-primary) !important;
-}
-
-/* Main calendar content area background */
-.toastui-calendar-panel {
-  background: var(--bg-secondary) !important;
-}
-
-/* Week view time slots */
-.toastui-calendar-time-date,
-.toastui-calendar-time-date-wrapper {
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
 }
