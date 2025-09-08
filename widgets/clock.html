@@ -10,8 +10,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: var(--bg-primary, #000); /* Add CSS variable with fallback */
-  color: var(--text-primary, #fff); /* Add CSS variable with fallback */
+  background: var(--bg-primary, #000);
+  color: var(--text-primary, #fff);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   display: flex;
   justify-content: space-between;
@@ -19,18 +19,19 @@ html, body {
   height: 100%;
   width: 100%;
   padding: 0 20px;
+  box-sizing: border-box; /* Ensures padding is included in width */
 }
   #time {
     font-size: 10vw;
     font-weight: bold;
-    padding-right: 20px; /* Add this line */
-    text-align: right; /* Changed from left to right */
+    padding-right: 20px;
+    text-align: right;
   }
   #weather {
     font-size: 6vw;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Changed from flex-end to flex-start */
+    justify-content: flex-start;
   }
   #weather-icon {
     margin-right: 15px;
