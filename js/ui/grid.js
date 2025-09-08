@@ -50,7 +50,6 @@ function createFallbackWidget(widget) {
     justify-content: center;
     background: #444;
     color: #999;
-    border-radius: 8px;
     font-size: 14px;
     text-align: center;
     padding: 20px;
