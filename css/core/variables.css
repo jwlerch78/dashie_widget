@@ -125,7 +125,7 @@ body.theme-light {
   --bg-fallback-widget: var(--bg-tertiary);
   --bg-button-semi: rgba(144, 164, 174, 0.6);
   --bg-menu-overlay: rgba(245, 245, 245, 0.9);
-  --grid-gap-color: #5E85FF;  /* Light blue grid gaps */
+  --grid-gap-color: #678FFF;  /* Light blue grid gaps */
 
   /* Text Colors - Dark gray for readability */
   --text-primary: #424242;    /* Dark gray text */
