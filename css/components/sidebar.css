@@ -188,6 +188,8 @@
   margin-left: 10px;
   pointer-events: auto; /* Allow clicks when visible */
   cursor: pointer; /* Show cursor on text */
+  flex: 1; /* ADD THIS - makes label take up remaining space */
+  min-width: 0; /* ADD THIS - allows text to shrink if needed */
 }
 
 /* Separator line between main and system functions */
