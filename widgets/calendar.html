@@ -23,6 +23,7 @@
       height: 100%;
       position: relative;
       background: #333;
+      overflow-y: auto; /* Allow vertical scrolling */
     }
 
     #calendar {
@@ -32,6 +33,7 @@
       border-radius: 8px;
       margin: 10px;
       box-sizing: border-box;
+      min-height: 600px; /* Ensure minimum height for scrolling */
     }
 
     .calendar-header {
@@ -44,6 +46,9 @@
       border-radius: 8px 8px 0 0;
       margin: 10px 10px 0 10px;
       font-size: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .calendar-title {
@@ -80,6 +85,18 @@
       z-index: 999;
     }
 
+    .controls-info {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 10px;
+      color: #666;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 3px 6px;
+      border-radius: 3px;
+      z-index: 1000;
+    }
+
     /* Override Toast UI styles for dark theme */
     .toastui-calendar {
       background: white !important;
@@ -92,6 +109,12 @@
 
     .toastui-calendar-month-view-day-names {
       background: #f8f9fa !important;
+    }
+
+    /* Ensure calendar content is scrollable */
+    .toastui-calendar-layout {
+      height: auto !important;
+      min-height: 500px !important;
     }
   </style>
 </head>
@@ -107,6 +130,10 @@
     </div>
     
     <div id="calendar" style="display: none;"></div>
+    
+    <div class="controls-info">
+      ←→: Navigate | ↑↓: Scroll | ,.: Change View
+    </div>
   </div>
 
   <!-- Toast UI Calendar JS -->
@@ -233,6 +260,20 @@
       console.log('📅 Navigated', direction, 'to', newDate.toDateString());
     }
 
+    // Scroll calendar content
+    function scrollCalendar(direction) {
+      const container = document.getElementById('calendar-container');
+      const scrollAmount = 100; // pixels to scroll
+      
+      if (direction === 'up') {
+        container.scrollTop -= scrollAmount;
+      } else if (direction === 'down') {
+        container.scrollTop += scrollAmount;
+      }
+      
+      console.log('📅 Scrolled', direction, 'by', scrollAmount, 'pixels');
+    }
+
     // Change view mode
     function changeView(newView) {
       if (['daily', 'week', 'month'].includes(newView)) {
@@ -243,9 +284,9 @@
       }
     }
 
-    // Cycle through view modes
+    // Cycle through view modes (fast forward/rewind)
     function cycleView(direction) {
-      const views = ['daily', 'week', 'month'];
+      const views = ['week', 'month', 'daily']; // week -> month -> daily -> week
       const currentIndex = views.indexOf(currentView);
       let newIndex;
       
@@ -280,18 +321,19 @@
       const events = [];
       const today = new Date();
       
-      // Create 10 sample events over the next month
-      for (let i = 0; i < 10; i++) {
+      // Create 15 sample events over the next month for more scrollable content
+      for (let i = 0; i < 15; i++) {
         const eventDate = new Date(today);
-        eventDate.setDate(today.getDate() + (i * 3));
+        eventDate.setDate(today.getDate() + (i * 2));
+        eventDate.setHours(9 + (i % 8), 0, 0, 0); // Vary hours from 9 AM to 4 PM
         
         const endDate = new Date(eventDate);
-        endDate.setHours(eventDate.getHours() + 2);
+        endDate.setHours(eventDate.getHours() + 1 + (i % 3)); // 1-3 hour events
         
         events.push({
           id: `${cal.id}-event-${i}`,
           calendarId: cal.id,
-          title: `${cal.name} Event ${i + 1}`,
+          title: `${cal.name.split(' ')[0]} Event ${i + 1}`,
           start: eventDate,
           end: endDate,
           category: 'time',
@@ -318,16 +360,44 @@
             navigateCalendar('previous');
             break;
           case 'up':
-            cycleView('forward');
+            scrollCalendar('up');
             break;
           case 'down':
-            cycleView('backward');
+            scrollCalendar('down');
             break;
           case 'enter':
             console.log('📅 Enter pressed on calendar widget');
             break;
+          // Handle fast forward/rewind from remote control
+          case 'fastforward':
+          case 'ff':
+          case ',':
+            cycleView('forward');
+            break;
+          case 'rewind':
+          case 'rw':
+          case '.':
+            cycleView('backward');
+            break;
           default:
             console.log('📅 Calendar widget ignoring command:', action);
+            break;
+        }
+      }
+    });
+
+    // Also listen for direct keyboard events for PC testing
+    document.addEventListener('keydown', (e) => {
+      // Only handle if this widget is focused and the event isn't from message passing
+      if (document.hasFocus()) {
+        switch(e.key) {
+          case ',':
+            e.preventDefault();
+            cycleView('forward');
+            break;
+          case '.':
+            e.preventDefault();
+            cycleView('backward');
             break;
         }
       }
