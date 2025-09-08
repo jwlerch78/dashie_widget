@@ -156,11 +156,11 @@ export function renderGrid() {
 export function renderSidebar() {
   elements.sidebar.innerHTML = ""; // clear previous
 
-  // Add Dashie logo (only visible when expanded)
+  // Add Dashie logo (only visible when expanded) - Don't hardcode the src!
   const logo = document.createElement("img");
-  logo.src = "icons/Dashie_Full_Logo_White_Transparent.png";
   logo.classList.add("dashie-logo");
   logo.alt = "Dashie";
+  // Logo src will be set by theme system - don't hardcode it here
   elements.sidebar.appendChild(logo);
 
   // Separate main and system items
