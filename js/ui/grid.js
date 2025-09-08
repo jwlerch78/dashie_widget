@@ -156,11 +156,25 @@ export function renderGrid() {
 export function renderSidebar() {
   elements.sidebar.innerHTML = ""; // clear previous
 
-  // Add Dashie logo (only visible when expanded) - Don't hardcode the src!
+  // Add Dashie logo (only visible when expanded)
   const logo = document.createElement("img");
   logo.classList.add("dashie-logo");
   logo.alt = "Dashie";
-  // Logo src will be set by theme system - don't hardcode it here
+  
+  // Set logo source based on current theme immediately
+  import('../core/theme.js').then(({ getCurrentTheme }) => {
+    const currentTheme = getCurrentTheme();
+    const logoSrc = currentTheme === 'light' 
+      ? 'icons/Dashie_Full_Logo_Black_Transparent.png'
+      : 'icons/Dashie_Full_Logo_White_Transparent.png';
+    logo.src = logoSrc;
+    console.log(`🖼️ Logo set for ${currentTheme} theme:`, logoSrc);
+  }).catch(() => {
+    // Fallback if theme system isn't loaded yet
+    logo.src = 'icons/Dashie_Full_Logo_White_Transparent.png';
+    console.log('🖼️ Logo set to default (white)');
+  });
+  
   elements.sidebar.appendChild(logo);
 
   // Separate main and system items
