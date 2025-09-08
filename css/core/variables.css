@@ -25,14 +25,14 @@
 /* Enhanced Interactive States */
   --outline-selected: var(--accent-orange);
   --outline-focused: var(--accent-blue);
-  --outline-width-selected: 3px;  /* Increased from 3px */
-  --outline-width-focused: 4px;   /* Increased from 4px */
-  --outline-offset: 2px;          /* Increased from 2px */
+  --outline-width-selected: 2px;  /* Increased from 3px */
+  --outline-width-focused: 3px;   /* Increased from 4px */
+  --outline-offset: 1px;          /* Increased from 2px */
   --outline-offset-widget: 1px;   /* Increased from 3px */
   
   /* Enhanced Glow Effects */
-  --glow-selected: 0 0 25px rgba(255, 170, 0, 0.8), 0 0 50px rgba(255, 170, 0, 0.4);
-  --glow-focused: 0 0 30px rgba(0, 170, 255, 0.9), 0 0 60px rgba(0, 170, 255, 0.5);
+  --glow-selected: 0 0 20px rgba(255, 170, 0, 0.8), 0 0 45px rgba(255, 170, 0, 0.4);
+  --glow-focused: 0 0 25px rgba(0, 170, 255, 0.9), 0 0 55px rgba(0, 170, 255, 0.5);
   
   /* Layout & Spacing */
   --sidebar-width-collapsed: 60px;
