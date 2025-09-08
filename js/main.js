@@ -25,8 +25,8 @@ function initializeApp() {
   renderSidebar();
   renderGrid();
   
-  // Set initial focus
-  updateFocus();
+  // DON'T call updateFocus() here - let it start clean with no highlights
+  // updateFocus();
   
   console.log("Dashie Dashboard initialized successfully!");
 }
