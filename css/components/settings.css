@@ -210,6 +210,11 @@
   box-shadow: 0 0 0 2px rgba(255, 170, 0, 0.3);
 }
 
+.input-error {
+  border-color: var(--color-error) !important;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3) !important;
+}
+
 /* URL Select Dropdown */
 .url-select,
 .album-select {
