@@ -274,6 +274,27 @@ function handleMenuSelection(optionId) {
   }
 }
 
+// Open menu with current main widget selected
+export function openMenuWithCurrentSelection() {
+  if (state.isAsleep || state.confirmDialog || state.selectedCell) return; // Don't open menu if widget is focused
+  
+  const sidebarOptions = [
+    { id: "main", label: "Main" },
+    { id: "map", label: "Map" },
+    { id: "camera", label: "Camera" },
+    { id: "calendar", label: "Calendar" },
+    "---",
+    { id: "reload", label: "Reload Dashie" },
+    { id: "exit", label: "Exit Dashie" }
+  ];
+  
+  // Find the index of the currently active main widget
+  const currentMainIndex = sidebarOptions.findIndex(item => item.id === state.currentMain);
+  setFocus({ type: "menu", index: currentMainIndex >= 0 ? currentMainIndex : 0 });
+  elements.sidebar.classList.add("expanded");
+  updateFocus();
+}
+
 // Initialize highlight system
 export function initializeHighlightTimeout() {
   // Start the timer when the app loads
