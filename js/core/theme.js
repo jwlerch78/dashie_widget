@@ -1,4 +1,4 @@
-// js/core/theme.js - Simplified Theme Management System
+// js/core/theme.js - Complete Theme Management System
 
 // ---------------------
 // THEME CONSTANTS
@@ -18,7 +18,7 @@ export const THEME_CONFIG = {
   [THEMES.LIGHT]: {
     name: 'Light Theme', 
     className: 'theme-light',
-    logoSrc: 'icons/Dashie_Full_Logo_Black_Transparent.png'
+    logoSrc: 'icons/Dashie_Full_Logo_Orange_Transparent.png'
   }
 };
 
@@ -116,6 +116,18 @@ function updateLogo(theme) {
   if (logo) {
     logo.src = THEME_CONFIG[theme].logoSrc;
     console.log(`🖼️ Logo updated for ${theme} theme`);
+  } else {
+    console.warn('🖼️ Dashie logo element not found - will retry');
+    // Retry after a short delay if logo element doesn't exist yet
+    setTimeout(() => {
+      const retryLogo = document.querySelector('.dashie-logo');
+      if (retryLogo) {
+        retryLogo.src = THEME_CONFIG[theme].logoSrc;
+        console.log(`🖼️ Logo updated on retry for ${theme} theme`);
+      } else {
+        console.warn('🖼️ Logo element still not found after retry');
+      }
+    }, 200);
   }
 }
 
@@ -248,7 +260,6 @@ export function initializeThemeSystem() {
   console.log(`📖 Loaded theme: ${currentTheme}`);
   
   applyThemeToBody(currentTheme);
-  updateLogo(currentTheme);
   
   initializeWidgetCommunication();
   
@@ -256,6 +267,11 @@ export function initializeThemeSystem() {
   setTimeout(() => {
     notifyWidgetsThemeChange(currentTheme);
   }, 500);
+  
+  // Update logo with multiple retries to ensure sidebar is rendered
+  updateLogo(currentTheme);
+  setTimeout(() => updateLogo(currentTheme), 300);
+  setTimeout(() => updateLogo(currentTheme), 600);
   
   console.log(`✅ Theme system initialized with ${THEME_CONFIG[currentTheme].name}`);
 }
