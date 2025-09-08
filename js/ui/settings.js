@@ -491,4 +491,64 @@ export function moveSettingsFocus(direction) {
       return true;
     });
   
-  if (direction === 'up' && settingsFocus
+  if (direction === 'up' && settingsFocus.index > 0) {
+    settingsFocus.index--;
+  } else if (direction === 'down' && settingsFocus.index < focusable.length - 1) {
+    settingsFocus.index++;
+  } else if (direction === 'left' && settingsFocus.index > 0) {
+    settingsFocus.index--;
+  } else if (direction === 'right' && settingsFocus.index < focusable.length - 1) {
+    settingsFocus.index++;
+  }
+  
+  updateSettingsFocus();
+}
+
+export function handleSettingsEnter() {
+  if (!settingsModal) return;
+  
+  // Get only visible/focusable elements
+  const focusable = Array.from(settingsModal.querySelectorAll('.settings-close, .section-header, .time-input, .number-input, .time-period, .url-select, .album-select, .settings-button'))
+    .filter(el => {
+      // Always include close button, section headers, and footer buttons
+      if (el.classList.contains('settings-close') || 
+          el.classList.contains('section-header') || 
+          el.closest('.settings-footer')) {
+        return true;
+      }
+      
+      // For other elements, check if their parent section is expanded
+      const sectionContent = el.closest('.section-content');
+      if (sectionContent) {
+        return sectionContent.style.display !== 'none';
+      }
+      
+      return true;
+    });
+  
+  const focused = focusable[settingsFocus.index];
+  
+  if (focused) {
+    if (focused.classList.contains('section-header')) {
+      const sectionId = focused.dataset.section;
+      toggleSection(sectionId);
+    } else if (focused.classList.contains('time-period')) {
+      focused.click();
+    } else if (focused.classList.contains('settings-button') || focused.classList.contains('settings-close')) {
+      focused.click();
+    } else if (focused.classList.contains('time-input') || focused.classList.contains('number-input')) {
+      focused.focus();
+      focused.select();
+    } else if (focused.classList.contains('url-select') || focused.classList.contains('album-select')) {
+      focused.focus();
+    }
+  }
+}
+
+// ---------------------
+// PUBLIC API
+// ---------------------
+
+export function isSettingsOpen() {
+  return settingsModal !== null;
+}
