@@ -56,6 +56,7 @@
 --z-sidebar: 10;
 --z-widget-selected: 100;
 --z-widget-focused: 200;
+--z-sidebar-expanded: 300;
 --z-modal: 999;
 --z-sleep: 1000;
 }
