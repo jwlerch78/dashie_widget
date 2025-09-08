@@ -54,6 +54,7 @@
   --sidebar-width-collapsed: 60px;
   --sidebar-width-expanded: 200px;
   --grid-gap: 4px;
+  --grid-gap-color: #333; /* Add this new variable */
   --border-radius: 8px;
   --border-radius-small: 4px;
   
