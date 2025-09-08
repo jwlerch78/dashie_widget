@@ -30,7 +30,7 @@
     to right,
     var(--bg-primary) 0%,
     var(--bg-primary) 40%,
-    var(--bg-primary-transparent) 40%
+    var(--bg-primary-semi-transparent) 100%
   );
 }
 
