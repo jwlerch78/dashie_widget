@@ -63,21 +63,49 @@
 
 .settings-content {
   flex: 1;
-  padding: 30px;
+  padding: 20px 30px; /* Reduced from 30px */
   overflow-y: auto;
 }
 
 /* Settings Sections */
 .settings-section {
-  margin-bottom: 40px;
+  margin-bottom: 25px; /* Reduced from 40px */
 }
 
-.settings-section h3 {
+.settings-section h3.section-header {
   color: var(--text-primary);
   font-size: var(--font-size-large);
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0; /* Reduced bottom margin from 20px */
   border-bottom: 1px solid var(--text-muted);
-  padding-bottom: 10px;
+  padding-bottom: 8px; /* Reduced from 10px */
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.settings-section h3.section-header:hover {
+  color: var(--accent-orange);
+}
+
+.settings-section h3.section-header.selected {
+  outline: var(--outline-width-selected) solid var(--outline-selected);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-small);
+  padding: 4px 8px;
+  margin: -4px -8px 15px -8px;
+}
+
+.settings-section h3.section-header span {
+  margin-right: 8px;
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.section-content {
+  padding-left: 24px; /* Indent content under headers */
 }
 
 /* Settings Form Controls */
@@ -85,8 +113,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 15px 0;
+  margin-bottom: 15px; /* Reduced from 20px */
+  padding: 10px 0; /* Reduced from 15px */
+}
+
+.settings-row.compact {
+  margin-bottom: 10px; /* Even tighter for compact rows */
+  padding: 6px 0; /* Reduced padding for compact rows */
 }
 
 .settings-label {
@@ -175,6 +208,39 @@
 .number-input.selected {
   border-color: var(--outline-selected);
   box-shadow: 0 0 0 2px rgba(255, 170, 0, 0.3);
+}
+
+/* URL Select Dropdown */
+.url-select,
+.album-select {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--text-muted);
+  border-radius: var(--border-radius-small);
+  padding: 8px 12px;
+  font-size: var(--font-size-base);
+  width: 200px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.url-select:focus,
+.album-select:focus {
+  outline: none;
+  border-color: var(--outline-focused);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+}
+
+.url-select.selected,
+.album-select.selected {
+  border-color: var(--outline-selected);
+  box-shadow: 0 0 0 2px rgba(255, 170, 0, 0.3);
+}
+
+.album-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-muted);
 }
 
 /* Settings Navigation */
