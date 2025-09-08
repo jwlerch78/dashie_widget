@@ -1,21 +1,21 @@
-/* widgets/calendar/calendar.css - Calendar Widget Styles */
+/* widgets/calendar/calendar.css - Calendar Widget Styles with proper theme variables */
 
 :root {
-  /* Calendar Theme Variables */
-  --cal-bg-primary: var(--bg-primary, #222);
-  --cal-bg-secondary: var(--bg-secondary, #333);
-  --cal-bg-tertiary: var(--bg-button, #666);
-  --cal-text-primary: var(--text-primary, white);
-  --cal-text-secondary: var(--text-secondary, #ccc);
-  --cal-text-muted: var(--text-muted, #999);
-  --cal-border-radius: var(--border-radius-small, 16px);
-  --cal-border-radius-small: 8px;
+  /* Calendar Theme Variables - Use main theme variables */
+  --cal-bg-primary: var(--bg-primary);
+  --cal-bg-secondary: var(--bg-secondary);
+  --cal-bg-tertiary: var(--bg-button);
+  --cal-text-primary: var(--text-primary);
+  --cal-text-secondary: var(--text-secondary);
+  --cal-text-muted: var(--text-muted);
+  --cal-border-radius: var(--border-radius);
+  --cal-border-radius-small: var(--border-radius-small);
   
   /* Calendar Colors */
   --cal-navy: #1e3a8a;
   --cal-green: #166534;
-  --cal-content-bg: var(--bg-secondary, #333); /* Changed from white */
-  --cal-content-text: var(--text-primary, #fff); /* Changed from #333 */
+  --cal-content-bg: var(--bg-secondary);
+  --cal-content-text: var(--text-primary);
   
   /* Calendar Layout */
   --cal-header-height: 50px;
@@ -84,7 +84,7 @@ html, body {
   right: var(--cal-padding);
   font-size: 12px;
   color: var(--cal-text-muted);
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--bg-secondary);
   padding: 3px 6px;
   border-radius: var(--cal-border-radius-small);
   z-index: 1000;
@@ -106,7 +106,7 @@ html, body {
   left: var(--cal-padding);
   font-size: 10px;
   color: var(--cal-text-muted);
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--bg-secondary);
   padding: 3px 6px;
   border-radius: var(--cal-border-radius-small);
   z-index: 1000;
@@ -183,10 +183,10 @@ html, body {
   font-weight: 500;
 }
 
-/* Day names styling */
+/* Day names styling - Use theme variables instead of hardcoded colors */
 .toastui-calendar-week-view-day-names,
 .toastui-calendar-month-view-day-names {
-  background: #f8f9fa !important;
+  background: var(--cal-bg-secondary) !important;
   color: var(--cal-content-text) !important;
   font-weight: 600;
 }
@@ -208,5 +208,29 @@ html, body {
 }
 
 .toastui-calendar-timegrid-timezone {
+  color: var(--cal-content-text) !important;
+}
+
+/* Grid lines and borders - use theme colors */
+.toastui-calendar-weekday,
+.toastui-calendar-month-date {
+  border-color: var(--cal-text-muted) !important;
+}
+
+/* Time column background */
+.toastui-calendar-time-hour,
+.toastui-calendar-time-hour-marker {
+  background: var(--cal-bg-primary) !important;
+}
+
+/* Main calendar content area background */
+.toastui-calendar-panel {
+  background: var(--cal-content-bg) !important;
+}
+
+/* Week view time slots */
+.toastui-calendar-time-date,
+.toastui-calendar-time-date-wrapper {
+  background: var(--cal-content-bg) !important;
   color: var(--cal-content-text) !important;
 }
