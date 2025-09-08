@@ -9,13 +9,7 @@ import { state, elements, widgets, sidebarMapping, setFocus } from '../core/stat
 function createWidgetIframe(widget) {
   const iframe = document.createElement("iframe");
   iframe.src = widget.url || "about:blank";
-  iframe.style.cssText = `
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: #333;
-    pointer-events: auto;
-  `;
+  iframe.className = "widget-iframe"; // Use CSS class instead of inline styles
   iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
   
   // Prevent iframe from stealing focus when sidebar is expanded
