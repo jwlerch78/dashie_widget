@@ -1,4 +1,4 @@
-// js/auth/simple-auth.js - Phase 1: Basic Google SSO Only
+// js/auth/simple-auth.js - Phase 1: Basic Google SSO Only (Simplified)
 
 class SimpleAuth {
   constructor() {
@@ -124,9 +124,6 @@ class SimpleAuth {
     this.isSignedIn = false;
     this.clearSavedUser();
     
-    // Clean up any existing modals
-    this.closeAllModals();
-    
     // Show sign-in prompt
     this.showSignInPrompt();
     
@@ -137,76 +134,12 @@ class SimpleAuth {
     // Exit the application completely
     console.log('🚪 Exiting Dashie...');
     
-    // Clean up any existing modals first
-    this.closeAllModals();
-    
     if (window.close) {
       window.close();
     } else {
       // Fallback - redirect to a blank page or show exit message
       window.location.href = 'about:blank';
     }
-  }
-
-  closeAllModals() {
-    // Remove any existing modals
-    const existingModals = document.querySelectorAll('.exit-modal-backdrop, .user-menu-modal');
-    existingModals.forEach(modal => modal.remove());
-  }
-
-  showExitSignOutModal() {
-    // Clean up any existing modals first
-    this.closeAllModals();
-    
-    // Create modal with logout and exit options - using consistent styling
-    const modal = document.createElement('div');
-    modal.className = 'exit-modal-backdrop';
-    modal.innerHTML = `
-      <div class="exit-modal">
-        <div class="modal-option logout-option" onclick="dashieAuth.signOut()">
-          <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-photo-modal">
-          <span>Logout ${this.currentUser.name}</span>
-        </div>
-        
-        <div class="modal-option exit-option" onclick="dashieAuth.exitApp()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-          </svg>
-          <span>Exit Dashie</span>
-        </div>
-        
-        <div class="modal-option cancel-option" onclick="document.querySelector('.exit-modal-backdrop').remove()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
-          <span>Cancel</span>
-        </div>
-      </div>
-    `;
-    
-    // Style the modal
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Close on backdrop click
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
   }
 
   // UI Management
@@ -314,7 +247,7 @@ class SimpleAuth {
   showSignedInState() {
     this.hideSignInPrompt();
     this.showDashboard();
-    this.setupExitHandler();
+    // Note: No need to override exit handler anymore - the enhanced modal in modals.js handles this
   }
 
   showDashboard() {
@@ -323,34 +256,6 @@ class SimpleAuth {
     if (app) {
       app.style.display = 'flex';
       app.classList.add('authenticated');
-    }
-  }
-
-  setupExitHandler() {
-    // Set up the exit/sign out handler - modify existing exit functionality
-    window.dashieAuthUser = this.currentUser;
-    window.dashieAuthShowExitModal = () => this.showExitSignOutModal();
-    
-    // Modify the existing exit handler to show our modal instead
-    this.overrideExitHandler();
-  }
-
-  overrideExitHandler() {
-    // Find and modify the exit menu item to show our modal
-    const exitItem = document.querySelector('[data-menu="exit"]');
-    if (exitItem) {
-      // Change the label to "Exit / Sign Out"
-      const label = exitItem.querySelector('.menu-label');
-      if (label) {
-        label.textContent = 'Exit / Sign Out';
-      }
-      
-      // Override click handler
-      const newExitItem = exitItem.cloneNode(true);
-      newExitItem.addEventListener('click', () => {
-        this.showExitSignOutModal();
-      });
-      exitItem.parentNode.replaceChild(newExitItem, exitItem);
     }
   }
 
@@ -441,51 +346,6 @@ class SimpleAuth {
         color: #9e9e9e !important;
         font-size: 14px;
         margin: 0;
-      }
-
-      /* Exit/Sign Out Modal - consistent with signin styling */
-      .exit-modal {
-        background: #FCFCFF;
-        border-radius: 12px;
-        padding: 30px;
-        min-width: 350px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .modal-option {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 20px;
-        background: white;
-        border: 1px solid #dadce0;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #333;
-        font-size: 16px;
-        font-weight: 500;
-      }
-      
-      .modal-option:hover {
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        background: #f8f9fa;
-      }
-      
-      .user-photo-modal {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      
-      .modal-option svg {
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
       }
     `;
     
