@@ -65,7 +65,7 @@ class SimpleAuth {
     if (savedUser) {
       this.currentUser = savedUser;
       this.isSignedIn = true;
-      this.showSignedInState(); // This will add the user profile to sidebar
+      this.showSignedInState();
     } else {
       this.showSignInPrompt();
     }
@@ -139,27 +139,13 @@ class SimpleAuth {
   }
 
   removeUserProfile() {
-    // Remove user profile and restore exit icon
+    // Remove user profile - the 2x2 grid stays intact
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     
     const userProfile = sidebar.querySelector('.user-profile');
     if (userProfile) {
       userProfile.remove();
-    }
-    
-    // Restore exit icon to system functions
-    const systemContainer = sidebar.querySelector('.system-functions');
-    if (systemContainer && !systemContainer.querySelector('[data-menu="exit"]')) {
-      // Recreate exit icon if it was replaced
-      const exitItem = document.createElement('div');
-      exitItem.className = 'menu-item system';
-      exitItem.setAttribute('data-menu', 'exit');
-      exitItem.innerHTML = `
-        <img src="icons/icon-exit.svg" class="menu-icon" alt="Exit">
-        <span class="menu-label">Exit</span>
-      `;
-      systemContainer.appendChild(exitItem);
     }
   }
 
@@ -178,9 +164,11 @@ class SimpleAuth {
     signInOverlay.id = 'sign-in-overlay';
     signInOverlay.innerHTML = `
       <div class="sign-in-modal">
+        <img src="icons/Dashie_Full_Logo_Orange_Transparent.png" alt="Dashie" class="dashie-logo-signin">
+        
         <div class="sign-in-header">
-          <h2>Welcome to Dashie</h2>
-          <p>Sign in to access your personalized dashboard</p>
+          <h2>Welcome to Dashie!</h2>
+          <p>Helping active families manage the chaos</p>
         </div>
         
         <div class="sign-in-content">
@@ -202,7 +190,7 @@ class SimpleAuth {
       </div>
     `;
     
-    // Add styles
+    // Add styles - Force light theme for sign-in modal
     signInOverlay.style.cssText = `
       position: fixed;
       top: 0;
@@ -260,7 +248,7 @@ class SimpleAuth {
   }
 
   addUserInfoToUI() {
-    // Add user profile to sidebar (always show when authenticated)
+    // Add user profile to sidebar below separator
     this.addUserProfileToSidebar();
     // Also prepare settings integration
     this.prepareSettingsIntegration();
@@ -274,71 +262,61 @@ class SimpleAuth {
     const existing = sidebar.querySelector('.user-profile');
     if (existing) existing.remove();
     
-    // Create user profile element that replaces the exit icon
+    // Create user profile element - goes BELOW the separator, keeps 2x2 grid intact
     const userProfile = document.createElement('div');
-    userProfile.className = 'user-profile menu-item system';
+    userProfile.className = 'user-profile menu-item';
     userProfile.innerHTML = `
       <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-avatar">
-      <span class="menu-label">${this.currentUser.name}</span>
+      <span class="menu-label">Sign Out</span>
     `;
     
-    // Add click handler for user menu (settings)
+    // Add click handler for sign out
     userProfile.addEventListener('click', () => {
-      this.openUserSettings();
+      this.signOut();
     });
     
-    // Find the system functions container and replace exit icon
-    const systemContainer = sidebar.querySelector('.system-functions');
-    if (systemContainer) {
-      // Find and replace the exit menu item
-      const exitItem = systemContainer.querySelector('[data-menu="exit"]');
-      if (exitItem) {
-        // Replace exit with user profile
-        systemContainer.replaceChild(userProfile, exitItem);
-      } else {
-        // If no exit item, just add to system container
-        systemContainer.appendChild(userProfile);
-      }
-    }
+    // Add user profile AFTER the separator (at the very end of sidebar)
+    sidebar.appendChild(userProfile);
     
     this.addUserProfileStyles();
   }
 
   addUserProfileStyles() {
-    // Add CSS for user profile in sidebar
+    // Add CSS for user profile below separator + forced light theme for sign-in
     const style = document.createElement('style');
     style.textContent = `
-      .user-profile.menu-item.system {
+      /* User profile styling - below separator, centered */
+      .user-profile.menu-item {
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 1px;
-        padding: 2px;
-        border-radius: 4px;
-        width: 100%;
-        height: 20px;
+        margin: 15px 10px 10px 10px;
+        padding: 8px;
+        border-radius: var(--border-radius);
+        width: calc(100% - 20px);
         box-sizing: border-box;
         transition: background var(--transition-fast);
         cursor: pointer;
+        background: var(--bg-secondary);
       }
       
-      .user-profile.menu-item.system:hover {
+      .user-profile.menu-item:hover {
         background: var(--bg-active);
       }
       
       .user-profile .user-avatar {
-        width: 16px;
-        height: 16px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         object-fit: cover;
       }
       
       .user-profile .menu-label {
         position: absolute;
-        left: 24px;
+        left: 50%;
         top: 50%;
-        transform: translateY(-50%);
+        transform: translate(-50%, -50%);
         color: var(--text-primary);
         font-size: var(--font-size-small);
         white-space: nowrap;
@@ -351,43 +329,51 @@ class SimpleAuth {
         opacity: 1;
         position: static;
         transform: none;
-        margin-left: 6px;
+        margin-left: 10px;
         pointer-events: auto;
       }
       
-      #sidebar.expanded .user-profile.menu-item.system {
-        width: 100%;
-        height: 28px;
-        margin: 0;
-        padding: 4px 8px;
+      #sidebar.expanded .user-profile.menu-item {
         justify-content: flex-start;
+        padding: 10px 15px;
       }
       
       #sidebar.expanded .user-profile .user-avatar {
-        width: 20px;
-        height: 20px;
+        width: 28px;
+        height: 28px;
       }
 
+      /* Force light theme for sign-in modal */
       .sign-in-modal {
-        background: var(--bg-primary);
+        background: #FCFCFF !important;
         border-radius: 12px;
         padding: 40px;
         max-width: 400px;
         width: 90%;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        color: #424242 !important;
+      }
+      
+      .dashie-logo-signin {
+        width: 200px;
+        height: auto;
+        margin: 0 auto 20px auto;
+        display: block;
       }
       
       .sign-in-header h2 {
-        color: var(--text-primary);
+        color: #424242 !important;
         margin: 0 0 10px 0;
         font-size: 28px;
+        font-weight: bold;
       }
       
       .sign-in-header p {
-        color: var(--text-secondary);
+        color: #616161 !important;
         margin: 0 0 30px 0;
         font-size: 16px;
+        font-style: italic;
       }
       
       .sign-in-content {
@@ -418,7 +404,7 @@ class SimpleAuth {
       }
       
       .sign-in-footer p {
-        color: var(--text-muted);
+        color: #9e9e9e !important;
         font-size: 14px;
         margin: 0;
       }
@@ -430,142 +416,8 @@ class SimpleAuth {
     }
   }
 
-  openUserSettings() {
-    // Open settings modal with user/auth section
-    console.log('🔐 Opening user settings...');
-    
-    // Check if settings module is available
-    if (window.showSettings) {
-      window.showSettings();
-    } else {
-      // Fallback: show simple user menu
-      this.showUserMenu();
-    }
-  }
-
-  showUserMenu() {
-    // Simple user menu fallback
-    const userMenu = document.createElement('div');
-    userMenu.className = 'user-menu-modal';
-    userMenu.innerHTML = `
-      <div class="user-menu">
-        <div class="user-menu-header">
-          <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-menu-avatar">
-          <div class="user-menu-info">
-            <div class="user-menu-name">${this.currentUser.name}</div>
-            <div class="user-menu-email">${this.currentUser.email}</div>
-          </div>
-        </div>
-        <div class="user-menu-actions">
-          <button class="user-menu-button" onclick="dashieAuth.signOut()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-            </svg>
-            Sign Out
-          </button>
-          <button class="user-menu-button" onclick="document.querySelector('.user-menu-modal').remove()">
-            Cancel
-          </button>
-        </div>
-      </div>
-    `;
-    
-    // Add styles for user menu
-    userMenu.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    `;
-    
-    // Add menu styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .user-menu {
-        background: var(--bg-primary);
-        border-radius: 12px;
-        padding: 20px;
-        min-width: 300px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      }
-      
-      .user-menu-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid var(--text-muted);
-      }
-      
-      .user-menu-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-      }
-      
-      .user-menu-name {
-        font-size: 18px;
-        font-weight: bold;
-        color: var(--text-primary);
-      }
-      
-      .user-menu-email {
-        font-size: 14px;
-        color: var(--text-secondary);
-      }
-      
-      .user-menu-actions {
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
-      }
-      
-      .user-menu-button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 15px;
-        background: var(--bg-button);
-        color: var(--text-primary);
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all var(--transition-fast);
-      }
-      
-      .user-menu-button:hover {
-        transform: scale(1.02);
-        background: var(--bg-active);
-      }
-    `;
-    
-    if (!document.querySelector('#user-menu-styles')) {
-      style.id = 'user-menu-styles';
-      document.head.appendChild(style);
-    }
-    
-    document.body.appendChild(userMenu);
-    
-    // Close on backdrop click
-    userMenu.addEventListener('click', (e) => {
-      if (e.target === userMenu) {
-        userMenu.remove();
-      }
-    });
-  }
-
   prepareSettingsIntegration() {
     // Prepare for settings modal integration
-    // This will be called by the settings system if available
     window.dashieAuthUser = this.currentUser;
     window.dashieAuthSignOut = () => this.signOut();
   }
