@@ -137,6 +137,13 @@ class SimpleAuth {
   showSignInPrompt() {
     this.hideSignInPrompt(); // Remove any existing prompt
     
+    // Hide the main dashboard when showing sign-in
+    const app = document.getElementById('app');
+    if (app) {
+      app.style.display = 'none';
+      app.classList.remove('authenticated');
+    }
+    
     const signInOverlay = document.createElement('div');
     signInOverlay.id = 'sign-in-overlay';
     signInOverlay.innerHTML = `
