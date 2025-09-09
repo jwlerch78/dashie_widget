@@ -17,10 +17,15 @@ html, body {
 
 /* App Layout Container */
 #app {
-  display: flex;
+  display: none;
   width: 100%;
   height: 100%;
 }
+
+#app.authenticated {
+  display: flex; /* Show when authenticated */
+}
+
 
 /* Sidebar Layout Container */
 #sidebar-wrapper {
