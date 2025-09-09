@@ -129,24 +129,73 @@ class SimpleAuth {
     this.isSignedIn = false;
     this.clearSavedUser();
     
-    // Remove user profile from sidebar
-    this.removeUserProfile();
-    
     // Show sign-in prompt
     this.showSignInPrompt();
     
     console.log('🔐 User signed out');
   }
 
-  removeUserProfile() {
-    // Remove user profile - the 2x2 grid stays intact
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    
-    const userProfile = sidebar.querySelector('.user-profile');
-    if (userProfile) {
-      userProfile.remove();
+  exitApp() {
+    // Exit the application completely
+    console.log('🚪 Exiting Dashie...');
+    if (window.close) {
+      window.close();
+    } else {
+      // Fallback - redirect to a blank page or show exit message
+      window.location.href = 'about:blank';
     }
+  }
+
+  showExitSignOutModal() {
+    // Create modal with logout and exit options
+    const modal = document.createElement('div');
+    modal.className = 'exit-modal-backdrop';
+    modal.innerHTML = `
+      <div class="exit-modal">
+        <div class="exit-option" onclick="dashieAuth.signOut()">
+          <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-photo-modal">
+          <span>Logout ${this.currentUser.name}</span>
+        </div>
+        
+        <div class="exit-option" onclick="dashieAuth.exitApp()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          <span>Exit Dashie</span>
+        </div>
+        
+        <div class="exit-option cancel" onclick="document.querySelector('.exit-modal-backdrop').remove()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+          <span>Cancel</span>
+        </div>
+      </div>
+    `;
+    
+    // Style the modal
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
   }
 
   // UI Management
@@ -160,8 +209,12 @@ class SimpleAuth {
       app.classList.remove('authenticated');
     }
     
+    // Force light theme by temporarily adding light theme class to body
+    document.body.classList.add('temp-light-theme');
+    
     const signInOverlay = document.createElement('div');
     signInOverlay.id = 'sign-in-overlay';
+    signInOverlay.className = 'light-theme-signin';
     signInOverlay.innerHTML = `
       <div class="sign-in-modal">
         <img src="icons/Dashie_Full_Logo_Orange_Transparent.png" alt="Dashie" class="dashie-logo-signin">
@@ -182,6 +235,13 @@ class SimpleAuth {
             </svg>
             Continue with Google
           </button>
+          
+          <button id="exit-app-btn" class="exit-app-button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+            </svg>
+            Exit App
+          </button>
         </div>
         
         <div class="sign-in-footer">
@@ -190,7 +250,7 @@ class SimpleAuth {
       </div>
     `;
     
-    // Add styles - Force light theme for sign-in modal
+    // Add styles - ensure light theme override works
     signInOverlay.style.cssText = `
       position: fixed;
       top: 0;
@@ -223,6 +283,11 @@ class SimpleAuth {
     document.getElementById('manual-signin-btn').addEventListener('click', () => {
       this.signIn();
     });
+    
+    // Exit app button
+    document.getElementById('exit-app-btn').addEventListener('click', () => {
+      this.exitApp();
+    });
   }
 
   hideSignInPrompt() {
@@ -230,12 +295,15 @@ class SimpleAuth {
     if (overlay) {
       overlay.remove();
     }
+    
+    // Remove temporary light theme class
+    document.body.classList.remove('temp-light-theme');
   }
 
   showSignedInState() {
     this.hideSignInPrompt();
     this.showDashboard();
-    this.addUserInfoToUI();
+    this.setupExitHandler();
   }
 
   showDashboard() {
@@ -247,103 +315,41 @@ class SimpleAuth {
     }
   }
 
-  addUserInfoToUI() {
-    // Add user profile to sidebar below separator
-    this.addUserProfileToSidebar();
-    // Also prepare settings integration
-    this.prepareSettingsIntegration();
+  setupExitHandler() {
+    // Set up the exit/sign out handler - modify existing exit functionality
+    window.dashieAuthUser = this.currentUser;
+    window.dashieAuthShowExitModal = () => this.showExitSignOutModal();
+    
+    // Modify the existing exit handler to show our modal instead
+    this.overrideExitHandler();
   }
 
-  addUserProfileToSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar || !this.currentUser) return;
-    
-    // Remove existing user profile
-    const existing = sidebar.querySelector('.user-profile');
-    if (existing) existing.remove();
-    
-    // Create user profile element - goes BELOW the separator, keeps 2x2 grid intact
-    const userProfile = document.createElement('div');
-    userProfile.className = 'user-profile menu-item';
-    userProfile.innerHTML = `
-      <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-avatar">
-      <span class="menu-label">Sign Out</span>
-    `;
-    
-    // Add click handler for sign out
-    userProfile.addEventListener('click', () => {
-      this.signOut();
-    });
-    
-    // Add user profile AFTER the separator (at the very end of sidebar)
-    sidebar.appendChild(userProfile);
-    
-    this.addUserProfileStyles();
+  overrideExitHandler() {
+    // Find and modify the exit menu item to show our modal
+    const exitItem = document.querySelector('[data-menu="exit"]');
+    if (exitItem) {
+      // Change the label to "Exit / Sign Out"
+      const label = exitItem.querySelector('.menu-label');
+      if (label) {
+        label.textContent = 'Exit / Sign Out';
+      }
+      
+      // Override click handler
+      const newExitItem = exitItem.cloneNode(true);
+      newExitItem.addEventListener('click', () => {
+        this.showExitSignOutModal();
+      });
+      exitItem.parentNode.replaceChild(newExitItem, exitItem);
+    }
   }
 
-  addUserProfileStyles() {
-    // Add CSS for user profile below separator + forced light theme for sign-in
+  addSignInStyles() {
+    // Add comprehensive styles for sign-in and exit modal
     const style = document.createElement('style');
     style.textContent = `
-      /* User profile styling - below separator, centered */
-      .user-profile.menu-item {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 15px 10px 10px 10px;
-        padding: 8px;
-        border-radius: var(--border-radius);
-        width: calc(100% - 20px);
-        box-sizing: border-box;
-        transition: background var(--transition-fast);
-        cursor: pointer;
-        background: var(--bg-secondary);
-      }
-      
-      .user-profile.menu-item:hover {
-        background: var(--bg-active);
-      }
-      
-      .user-profile .user-avatar {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      
-      .user-profile .menu-label {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        color: var(--text-primary);
-        font-size: var(--font-size-small);
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity var(--transition-fast);
-        pointer-events: none;
-      }
-      
-      #sidebar.expanded .user-profile .menu-label {
-        opacity: 1;
-        position: static;
-        transform: none;
-        margin-left: 10px;
-        pointer-events: auto;
-      }
-      
-      #sidebar.expanded .user-profile.menu-item {
-        justify-content: flex-start;
-        padding: 10px 15px;
-      }
-      
-      #sidebar.expanded .user-profile .user-avatar {
-        width: 28px;
-        height: 28px;
-      }
-
-      /* Force light theme for sign-in modal */
+      /* Force light theme for sign-in - stronger override */
+      .temp-light-theme .sign-in-modal,
+      .light-theme-signin .sign-in-modal,
       .sign-in-modal {
         background: #FCFCFF !important;
         border-radius: 12px;
@@ -356,12 +362,14 @@ class SimpleAuth {
       }
       
       .dashie-logo-signin {
-        width: 200px;
+        width: 150px !important;
         height: auto;
         margin: 0 auto 20px auto;
         display: block;
       }
       
+      .temp-light-theme .sign-in-header h2,
+      .light-theme-signin .sign-in-header h2,
       .sign-in-header h2 {
         color: #424242 !important;
         margin: 0 0 10px 0;
@@ -369,6 +377,8 @@ class SimpleAuth {
         font-weight: bold;
       }
       
+      .temp-light-theme .sign-in-header p,
+      .light-theme-signin .sign-in-header p,
       .sign-in-header p {
         color: #616161 !important;
         margin: 0 0 30px 0;
@@ -403,28 +413,94 @@ class SimpleAuth {
         background: #f8f9fa;
       }
       
+      .exit-app-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 20px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 15px;
+      }
+      
+      .exit-app-button:hover {
+        background: #d32f2f;
+        transform: scale(1.02);
+      }
+      
+      .temp-light-theme .sign-in-footer p,
+      .light-theme-signin .sign-in-footer p,
       .sign-in-footer p {
         color: #9e9e9e !important;
         font-size: 14px;
         margin: 0;
       }
+
+      /* Exit/Sign Out Modal Styles */
+      .exit-modal {
+        background: var(--bg-primary);
+        border-radius: 12px;
+        padding: 20px;
+        min-width: 300px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .exit-option {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        background: var(--bg-secondary);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        color: var(--text-primary);
+        font-size: 16px;
+      }
+      
+      .exit-option:hover {
+        background: var(--bg-active);
+        transform: scale(1.02);
+      }
+      
+      .exit-option.cancel {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+      }
+      
+      .user-photo-modal {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      
+      .exit-option svg {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
     `;
     
-    if (!document.querySelector('#user-profile-styles')) {
-      style.id = 'user-profile-styles';
+    if (!document.querySelector('#auth-styles')) {
+      style.id = 'auth-styles';
       document.head.appendChild(style);
     }
   }
 
-  prepareSettingsIntegration() {
-    // Prepare for settings modal integration
-    window.dashieAuthUser = this.currentUser;
-    window.dashieAuthSignOut = () => this.signOut();
-  }
-
   showError(message) {
     console.error('🔐 Auth Error:', message);
-    // You could show a toast notification here
   }
 
   // Data persistence
@@ -478,9 +554,11 @@ let dashieAuth = null;
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     dashieAuth = new SimpleAuth();
+    dashieAuth.addSignInStyles();
   });
 } else {
   dashieAuth = new SimpleAuth();
+  dashieAuth.addSignInStyles();
 }
 
 // Make available globally
