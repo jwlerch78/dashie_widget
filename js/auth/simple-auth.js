@@ -8,7 +8,7 @@ class SimpleAuth {
     
     // Simplified config - just authentication, no calendar yet
     this.config = {
-      client_id: '221142210647-58t8hr48rk7nlgl56j969himso1qjjoo.apps.googleusercontent.com',
+      client_id: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
       scope: 'profile email'  // Just basic profile info for now
     };
     
@@ -65,7 +65,7 @@ class SimpleAuth {
     if (savedUser) {
       this.currentUser = savedUser;
       this.isSignedIn = true;
-      this.showSignedInState();
+      this.showSignedInState(); // This will add the user profile to sidebar
     } else {
       this.showSignInPrompt();
     }
