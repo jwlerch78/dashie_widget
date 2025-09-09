@@ -111,13 +111,8 @@ class SimpleAuth {
   signIn() {
     console.log('🔐 Starting sign-in process...');
     
-    // Show One Tap if available, otherwise show button
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback to OAuth popup
-        this.tokenClient.requestAccessToken();
-      }
-    });
+    // Use OAuth popup directly for more reliable sign-in
+    this.tokenClient.requestAccessToken();
   }
 
   signOut() {
@@ -129,6 +124,9 @@ class SimpleAuth {
     this.isSignedIn = false;
     this.clearSavedUser();
     
+    // Clean up any existing modals
+    this.closeAllModals();
+    
     // Show sign-in prompt
     this.showSignInPrompt();
     
@@ -138,6 +136,10 @@ class SimpleAuth {
   exitApp() {
     // Exit the application completely
     console.log('🚪 Exiting Dashie...');
+    
+    // Clean up any existing modals first
+    this.closeAllModals();
+    
     if (window.close) {
       window.close();
     } else {
@@ -146,26 +148,35 @@ class SimpleAuth {
     }
   }
 
+  closeAllModals() {
+    // Remove any existing modals
+    const existingModals = document.querySelectorAll('.exit-modal-backdrop, .user-menu-modal');
+    existingModals.forEach(modal => modal.remove());
+  }
+
   showExitSignOutModal() {
-    // Create modal with logout and exit options
+    // Clean up any existing modals first
+    this.closeAllModals();
+    
+    // Create modal with logout and exit options - using consistent styling
     const modal = document.createElement('div');
     modal.className = 'exit-modal-backdrop';
     modal.innerHTML = `
       <div class="exit-modal">
-        <div class="exit-option" onclick="dashieAuth.signOut()">
+        <div class="modal-option logout-option" onclick="dashieAuth.signOut()">
           <img src="${this.currentUser.picture}" alt="${this.currentUser.name}" class="user-photo-modal">
           <span>Logout ${this.currentUser.name}</span>
         </div>
         
-        <div class="exit-option" onclick="dashieAuth.exitApp()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <div class="modal-option exit-option" onclick="dashieAuth.exitApp()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
           </svg>
           <span>Exit Dashie</span>
         </div>
         
-        <div class="exit-option cancel" onclick="document.querySelector('.exit-modal-backdrop').remove()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <div class="modal-option cancel-option" onclick="document.querySelector('.exit-modal-backdrop').remove()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
           <span>Cancel</span>
@@ -226,7 +237,7 @@ class SimpleAuth {
         
         <div class="sign-in-content">
           <div id="google-signin-button"></div>
-          <button id="manual-signin-btn" class="manual-signin-button">
+          <button id="manual-signin-btn" class="signin-button">
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -236,11 +247,11 @@ class SimpleAuth {
             Continue with Google
           </button>
           
-          <button id="exit-app-btn" class="exit-app-button">
+          <button id="exit-app-btn" class="signin-button secondary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
             </svg>
-            Exit App
+            Exit
           </button>
         </div>
         
@@ -279,7 +290,7 @@ class SimpleAuth {
       }
     );
     
-    // Manual sign-in button
+    // Manual sign-in button - use OAuth popup for reliability
     document.getElementById('manual-signin-btn').addEventListener('click', () => {
       this.signIn();
     });
@@ -344,7 +355,7 @@ class SimpleAuth {
   }
 
   addSignInStyles() {
-    // Add comprehensive styles for sign-in and exit modal
+    // Add comprehensive styles - consistent button styling throughout
     const style = document.createElement('style');
     style.textContent = `
       /* Force light theme for sign-in - stronger override */
@@ -390,7 +401,8 @@ class SimpleAuth {
         margin: 30px 0;
       }
       
-      .manual-signin-button {
+      /* Consistent button styling */
+      .signin-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -405,35 +417,22 @@ class SimpleAuth {
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
-        margin-top: 20px;
+        margin-top: 15px;
       }
       
-      .manual-signin-button:hover {
+      .signin-button:hover {
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         background: #f8f9fa;
       }
       
-      .exit-app-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-        padding: 12px 20px;
-        background: #f44336;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 15px;
+      .signin-button.secondary {
+        background: white;
+        color: #333;
+        border: 1px solid #dadce0;
       }
       
-      .exit-app-button:hover {
-        background: #d32f2f;
-        transform: scale(1.02);
+      .signin-button.secondary:hover {
+        background: #f8f9fa;
       }
       
       .temp-light-theme .sign-in-footer p,
@@ -444,51 +443,48 @@ class SimpleAuth {
         margin: 0;
       }
 
-      /* Exit/Sign Out Modal Styles */
+      /* Exit/Sign Out Modal - consistent with signin styling */
       .exit-modal {
-        background: var(--bg-primary);
+        background: #FCFCFF;
         border-radius: 12px;
-        padding: 20px;
-        min-width: 300px;
+        padding: 30px;
+        min-width: 350px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
       }
       
-      .exit-option {
+      .modal-option {
         display: flex;
         align-items: center;
-        gap: 15px;
-        padding: 15px 20px;
-        background: var(--bg-secondary);
-        border-radius: var(--border-radius);
+        gap: 12px;
+        padding: 12px 20px;
+        background: white;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all var(--transition-fast);
-        color: var(--text-primary);
+        transition: all 0.2s ease;
+        color: #333;
         font-size: 16px;
+        font-weight: 500;
       }
       
-      .exit-option:hover {
-        background: var(--bg-active);
-        transform: scale(1.02);
-      }
-      
-      .exit-option.cancel {
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
+      .modal-option:hover {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        background: #f8f9fa;
       }
       
       .user-photo-modal {
-        width: 32px;
-        height: 32px;
+        width: 18px;
+        height: 18px;
         border-radius: 50%;
         object-fit: cover;
       }
       
-      .exit-option svg {
-        width: 24px;
-        height: 24px;
+      .modal-option svg {
+        width: 18px;
+        height: 18px;
         flex-shrink: 0;
       }
     `;
