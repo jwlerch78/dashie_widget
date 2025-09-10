@@ -38,12 +38,12 @@ export class AuthManager {
     return isAndroidWebView || isIOSWebView;
   }
 
-  detectNativeAuth() {
-    const hasNative = window.DashieNative && 
-                     typeof window.DashieNative.signIn === 'function';
-    console.log('🔐 Native auth available:', hasNative);
-    return hasNative;
-  }
+detectNativeAuth() {
+  const hasNative = window.DashieNative && 
+                   typeof window.DashieNative.signIn === 'function';
+  console.log('🔐 Native auth available:', hasNative); // This should be true/false, not undefined
+  return !!hasNative; // Force boolean conversion
+}
 
   async init() {
     console.log('🔐 Initializing AuthManager...');
