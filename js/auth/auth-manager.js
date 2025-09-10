@@ -66,16 +66,26 @@ detectNativeAuth() {
     } else if (this.isWebView) {
       console.log('🔐 WebView without native auth - showing WebView prompt');
       this.ui.showWebViewAuthPrompt(() => this.createWebViewUser());
-    } else {
-      console.log('🔐 Browser environment - initializing web auth');
-      try {
-        await this.webAuth.init();
-        this.checkExistingAuth();
-      } catch (error) {
-        console.error('🔐 Web auth initialization failed:', error);
-        this.handleAuthFailure(error);
-      }
-    }
+} else {
+  console.log('🔐 Browser environment - initializing web auth');
+  try {
+    await this.webAuth.init();
+    // Don't call checkExistingAuth() again - we already did it above
+    // Instead, show sign-in prompt since web auth is a stub
+    this.ui.showSignInPrompt(() => this.signIn(), () => this.exitApp());
+  } catch (error) {
+    console.error('🔐 Web auth initialization failed:', error);
+    this.handleAuthFailure(error);
+  }
+}
+What Was Happening
+hasNativeAuth was undefined (should be false)
+After web auth init, it was calling checkExistingAuth() which found no user
+But then it wasn't showing the sign-in prompt
+Try these fixes and you should see the sign-in modal appear in Chrome!
+
+
+
   }
 
   checkExistingAuth() {
