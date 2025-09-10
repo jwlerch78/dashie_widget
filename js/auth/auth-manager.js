@@ -78,14 +78,6 @@ detectNativeAuth() {
     this.handleAuthFailure(error);
   }
 }
-What Was Happening
-hasNativeAuth was undefined (should be false)
-After web auth init, it was calling checkExistingAuth() which found no user
-But then it wasn't showing the sign-in prompt
-Try these fixes and you should see the sign-in modal appear in Chrome!
-
-
-
   }
 
   checkExistingAuth() {
