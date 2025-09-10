@@ -22,7 +22,7 @@ class SimpleAuth {
   detectWebView() {
     const userAgent = navigator.userAgent;
     const isAndroidWebView = /wv/.test(userAgent) || 
-                           /Android.*AppleWebView(?!.*Chrome)/.test(userAgent) ||
+                           /Android.*AppleWebKit(?!.*Chrome)/.test(userAgent) ||
                            userAgent.includes('DashieApp'); // Our custom user agent
     const isIOSWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/.test(userAgent);
     
@@ -551,7 +551,7 @@ class SimpleAuth {
     });
   }
 
-  // Add this method to show WebView-specific auth prompt
+  // WebView-specific auth prompt
   showWebViewAuthPrompt() {
     this.hideSignInPrompt();
     
@@ -731,3 +731,203 @@ class SimpleAuth {
       } catch (error) {
         console.warn('🔐 Could not render Google sign-in button:', error);
       }
+    }, 1000);
+    
+    // Exit app button
+    document.getElementById('exit-app-btn').addEventListener('click', () => {
+      this.exitApp();
+    });
+  }
+
+  hideSignInPrompt() {
+    const overlay = document.getElementById('sign-in-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    
+    document.body.classList.remove('temp-light-theme');
+  }
+
+  showSignedInState() {
+    this.hideSignInPrompt();
+    this.showDashboard();
+  }
+
+  showDashboard() {
+    const app = document.getElementById('app');
+    if (app) {
+      app.style.display = 'flex';
+      app.classList.add('authenticated');
+    }
+  }
+
+  addSignInStyles() {
+    // Add comprehensive styles
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Force light theme for sign-in */
+      .temp-light-theme .sign-in-modal,
+      .light-theme-signin .sign-in-modal,
+      .sign-in-modal {
+        background: #FCFCFF !important;
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        color: #424242 !important;
+      }
+      
+      .dashie-logo-signin {
+        width: 150px !important;
+        height: auto;
+        margin: 0 auto 20px auto;
+        display: block;
+      }
+      
+      .temp-light-theme .sign-in-header h2,
+      .light-theme-signin .sign-in-header h2,
+      .sign-in-header h2 {
+        color: #424242 !important;
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      
+      .temp-light-theme .sign-in-header p,
+      .light-theme-signin .sign-in-header p,
+      .sign-in-header p {
+        color: #616161 !important;
+        margin: 0 0 30px 0;
+        font-size: 16px;
+        font-style: italic;
+      }
+      
+      .sign-in-content {
+        margin: 30px 0;
+      }
+      
+      /* Consistent button styling */
+      .signin-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 20px;
+        background: white;
+        color: #333;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 15px;
+      }
+      
+      .signin-button:hover {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        background: #f8f9fa;
+      }
+      
+      .signin-button.primary {
+        background: #4285f4;
+        color: white;
+        border: 1px solid #4285f4;
+      }
+      
+      .signin-button.primary:hover {
+        background: #3367d6;
+        border: 1px solid #3367d6;
+      }
+      
+      .signin-button.secondary {
+        background: white;
+        color: #333;
+        border: 1px solid #dadce0;
+      }
+      
+      .signin-button.secondary:hover {
+        background: #f8f9fa;
+      }
+      
+      .temp-light-theme .sign-in-footer p,
+      .light-theme-signin .sign-in-footer p,
+      .sign-in-footer p {
+        color: #9e9e9e !important;
+        font-size: 14px;
+        margin: 0;
+      }
+    `;
+    
+    if (!document.querySelector('#auth-styles')) {
+      style.id = 'auth-styles';
+      document.head.appendChild(style);
+    }
+  }
+
+  showError(message) {
+    console.error('🔐 Auth Error:', message);
+  }
+
+  // Data persistence methods
+  saveUser(userData) {
+    try {
+      localStorage.setItem('dashie-user', JSON.stringify(userData));
+    } catch (error) {
+      console.error('💾 Failed to save user data:', error);
+    }
+  }
+
+  getSavedUser() {
+    try {
+      const saved = localStorage.getItem('dashie-user');
+      if (saved) {
+        const userData = JSON.parse(saved);
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - userData.signedInAt < thirtyDays) {
+          return userData;
+        }
+      }
+    } catch (error) {
+      console.error('💾 Failed to load user data:', error);
+    }
+    return null;
+  }
+
+  clearSavedUser() {
+    try {
+      localStorage.removeItem('dashie-user');
+    } catch (error) {
+      console.error('💾 Failed to clear user data:', error);
+    }
+  }
+
+  // Public API
+  getUser() {
+    return this.currentUser;
+  }
+
+  isAuthenticated() {
+    return this.isSignedIn && this.currentUser !== null;
+  }
+}
+
+// Initialize and make globally available
+let dashieAuth = null;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    dashieAuth = new SimpleAuth();
+    dashieAuth.addSignInStyles();
+  });
+} else {
+  dashieAuth = new SimpleAuth();
+  dashieAuth.addSignInStyles();
+}
+
+window.dashieAuth = dashieAuth;
+
+export { SimpleAuth };
