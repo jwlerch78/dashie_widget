@@ -147,90 +147,50 @@ class SimpleAuth {
         protocol: window.location.protocol
       });
       
-      // WebView-specific configuration
+      // Simplified script configuration (remove crossOrigin which might cause CORS issues)
       script.src = scriptUrl;
       script.async = true;
-      script.defer = true;
-      script.crossOrigin = 'anonymous';
+      // Remove defer and crossOrigin attributes that might cause issues
       
-      // Set up comprehensive event handlers
+      // Set up event handlers
       const cleanup = () => {
         clearTimeout(timeout);
         script.onload = null;
         script.onerror = null;
-        script.onabort = null;
       };
       
       const timeout = setTimeout(() => {
         cleanup();
-        console.error('🔐 Google API load timeout (30s)');
-        
-        // Enhanced timeout debugging
-        console.error('🔐 Timeout debug info:', {
-          scriptInDocument: document.contains(script),
-          scriptReadyState: script.readyState,
-          documentReadyState: document.readyState,
-          windowGoogle: !!window.google,
-          headChildCount: document.head.children.length,
-          allScripts: Array.from(document.querySelectorAll('script')).map(s => s.src)
-        });
-        
+        console.error('🔐 Google API load timeout (15s)');
         script.remove();
-        reject(new Error('Google API load timeout - script did not load within 30 seconds'));
-      }, 30000);
+        reject(new Error('Google API load timeout'));
+      }, 15000); // Reduced timeout
       
       script.onload = () => {
         cleanup();
-        console.log('🔐 Google API script onload fired');
+        console.log('🔐 Google API script loaded successfully');
         
-        // Give extra time for API to initialize, especially in WebView
+        // Simple availability check
         const checkAvailability = (attempts = 0) => {
-          const maxAttempts = 20; // 10 seconds total
-          
-          console.log(`🔐 Checking API availability (attempt ${attempts + 1}/${maxAttempts}):`, {
-            windowGoogle: !!window.google,
-            googleAccounts: !!(window.google && window.google.accounts),
-            googleAccountsId: !!(window.google && window.google.accounts && window.google.accounts.id),
-            googleAccountsOauth2: !!(window.google && window.google.accounts && window.google.accounts.oauth2)
-          });
-          
-          if (window.google && window.google.accounts && 
-              window.google.accounts.id && window.google.accounts.oauth2) {
-            console.log('🔐 Google Identity Services fully available');
+          if (window.google && window.google.accounts) {
+            console.log('🔐 Google Identity Services available');
             resolve();
-          } else if (attempts < maxAttempts) {
-            setTimeout(() => checkAvailability(attempts + 1), 500);
+          } else if (attempts < 10) {
+            setTimeout(() => checkAvailability(attempts + 1), 200);
           } else {
-            console.error('🔐 Google API loaded but services not available after 10 seconds');
-            reject(new Error('Google Identity Services not available after API load'));
+            reject(new Error('Google Identity Services not available after load'));
           }
         };
         
-        // Start checking immediately for browsers, with delay for WebView
-        setTimeout(checkAvailability, this.isWebView ? 2000 : 100);
+        // Start checking after brief delay
+        setTimeout(checkAvailability, 100);
       };
       
       script.onerror = (error) => {
         cleanup();
-        console.error('🔐 Google API script onerror fired:', {
-          error: error,
-          message: error.message || 'Script load error',
-          type: error.type || 'unknown',
-          target: error.target ? {
-            src: error.target.src,
-            readyState: error.target.readyState
-          } : 'no target',
-          networkState: navigator.onLine ? 'online' : 'offline'
-        });
+        console.error('🔐 Google API script failed to load:', error);
         script.remove();
-        reject(new Error(`Google API script failed to load: ${error.message || 'Network or CORS error'}`));
-      };
-      
-      script.onabort = (error) => {
-        cleanup();
-        console.error('🔐 Google API script onabort fired:', error);
-        script.remove();
-        reject(new Error('Google API script load aborted'));
+        reject(new Error('Failed to load Google Identity Services script'));
       };
       
       // Verify document.head exists
@@ -240,14 +200,7 @@ class SimpleAuth {
       }
       
       console.log('🔐 Adding Google API script to document head...');
-      try {
-        document.head.appendChild(script);
-        console.log('🔐 Script element successfully added to DOM');
-      } catch (domError) {
-        cleanup();
-        console.error('🔐 Failed to add script to DOM:', domError);
-        reject(new Error(`Failed to add script to DOM: ${domError.message}`));
-      }
+      document.head.appendChild(script);
     });
   }
 
